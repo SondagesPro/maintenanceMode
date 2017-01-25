@@ -25,6 +25,10 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
     static protected $description = 'Put on maintenance mode , option to redirect to specific page.';
     static protected $name = 'maintenanceMode';
 
+    /* Array for available language : need a po file in .locale/lang/lang.mo, no other test is done */
+    private $availableLanguages=array(
+        'fr'
+    );
     protected $settings = array(
         'dateTime' => array(
             'type' => 'date',
@@ -32,6 +36,12 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             'help' => 'Leave empty disable maintenance mode.',
             'default'=> '',
         ),
+        //~ 'warningDelay' => array(
+            //~ 'type' => 'string',
+            //~ 'label' => 'Delay to show the warning.',
+            //~ 'help' => 'Leaving empty to disable warning. Linute if is numeric, can use <a href="https://secure.php.net/manual/datetime.formats.relative.php">Relative Formats</a>',
+            //~ 'default'=> '',
+        //~ ),
         'superAdminOnly' => array(
             'type'=>'boolean',
             'label'=>'Allow only super administrator.',
@@ -53,7 +63,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             'type'=>'text',
             'label'=>'Message to be shown',
             'htmlOptions'=>array(
-                'placeholder'=>'This website are in instance mode.',
+                'placeholder'=>'This website are on maintenance mode.',
             ),
             'help'=>'Not needed if you use redirect',
             'default'=>'',
@@ -69,6 +79,9 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         $this->subscribe('beforeControllerAction');
         $this->subscribe('beforeTokenEmail');
         $this->subscribe('beforeActivate');
+
+        /* To add own translation message source */
+        $this->subscribe('afterPluginLoad');
     }
 
     /**
@@ -79,18 +92,18 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         $oToolsSmartDomDocument = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
         if(!$oToolsSmartDomDocument)
         {
-            $this->getEvent()->set('message', gT("You must download renderMessage plugin"));
+            $this->getEvent()->set('message', $this->_translate("You must download renderMessage plugin"));
             $this->getEvent()->set('success', false);
         }
         elseif(!$oToolsSmartDomDocument->active)
         {
-            $this->getEvent()->set('message', gT("You must activate renderMessage plugin"));
+            $this->getEvent()->set('message', $this->_translate("You must activate renderMessage plugin"));
             $this->getEvent()->set('success', false);
         }
     }
 
     /*
-     * If not admin part : redirect to specfic page or show a message
+     * If not admin part : redirect to specific page or show a message
      */
     public function beforeControllerAction()
     {
@@ -99,7 +112,6 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             return;
         }
         /* Get actual time */
-        //~ tracevar([$this->_inMaintenance(),$this->_accessAllowed()]);
         if($this->_inMaintenance() && !$this->_accessAllowed()){
             $url=$this->get('urlRedirect');
             if($url){
@@ -110,7 +122,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
                 $url=str_replace("{LANGUAGE}",$lang,$url);
                 header('Location: '.$url);
             }
-            $message=$this->get('messageToShow',null,null,$this->settings['messageToShow']['htmlOptions']['placeholder']);
+            $message=$this->get('messageToShow',null,null,$this->_translate("This website are on maintenance mode."));
             $renderMessage = new \renderMessage\messageHelper();
             $renderMessage->render("<div class='alert alert-warning'>{$message}</div>");
         }
@@ -120,7 +132,6 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
      */
     public function beforeTokenEmail()
     {
-
         if($this->_inMaintenance()){
             if($this->get('disableMailSend',null,null,$this->settings['disableMailSend']['default'])){
                 $this->event->set('send',false);
@@ -142,7 +153,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         if(!empty($settings['urlRedirect'])){
             if(!filter_var($settings['urlRedirect'],FILTER_VALIDATE_URL)){
                 $settings['urlRedirect']="";
-                Yii::app()->setFlashMessage(gT("Bad url, you must review the redirect url."),'error');
+                Yii::app()->setFlashMessage($this->_translate("Bad url, you must review the redirect url."),'error');
             }
         }
         parent::saveSettings($settings);
@@ -160,7 +171,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
                 $pluginSettings['dateTime']['current']=$oDateTimeConverter->convert($aDateFormatData['phpdate']." H:i");
             }
         }
-        //~ $pluginSettings['messageToShow']['htmlOptions']['placeholder']=gT("This website are on maintenance mode");
+        $pluginSettings['messageToShow']['htmlOptions']['placeholder']=$this->_translate("This website are on maintenance mode.");
         return $pluginSettings;
     }
 
@@ -199,5 +210,32 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             return true;
         }
         return false;
+    }
+
+    private function _translate($string){
+        return Yii::t('',$string,array(),'maintenanceMode');
+    }
+    /**
+     * Add this translation just after loaded all plugins
+     */
+    public function afterPluginLoad(){
+        $lang=Yii::app()->language;
+        /* fix language if en_us (LS bug ?) */
+        if($lang=='en_US'){
+
+        }
+        if(in_array($lang,$this->availableLanguages)){
+            // messageSource for this plugin:
+            $messageMaintenanceMode=array(
+                    'class' => 'CGettextMessageSource',
+                    'cacheID' => 'maintenanceModeLang',
+                    'cachingDuration'=>3600,
+                    'forceTranslation' => true,
+                    'useMoFile' => true,
+                    'basePath' => __DIR__ . DIRECTORY_SEPARATOR.'locale',
+                    'catalog'=>$lang
+            );
+            Yii::app()->setComponent('maintenanceMode',$messageMaintenanceMode);
+        }
     }
 }
