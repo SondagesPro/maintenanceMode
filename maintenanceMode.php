@@ -25,10 +25,6 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
     static protected $description = 'Put on maintenance mode , option to redirect to specific page.';
     static protected $name = 'maintenanceMode';
 
-    /* Array for available language : need a po file in .locale/lang/lang.mo, no other test is done */
-    private $availableLanguages=array(
-        'fr'
-    );
     protected $settings = array(
         'dateTime' => array(
             'type' => 'date',
@@ -123,6 +119,9 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
                 header('Location: '.$url);
             }
             $message=$this->get('messageToShow',null,null,$this->_translate("This website are on maintenance mode."));
+            if(!$message){
+                $message=$this->_translate("This website are on maintenance mode.");
+            }
             $renderMessage = new \renderMessage\messageHelper();
             $renderMessage->render("<div class='alert alert-warning'>{$message}</div>");
         }
@@ -195,9 +194,9 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
      */
     private function _accessAllowed(){
         /* A1llow admin in condition */
-        if(Yii::app()->session['loginID'] && !$this->get('superAdminOnly')){
-            return true;
-        }
+        //~ if(Yii::app()->session['loginID'] && !$this->get('superAdminOnly')){
+            //~ return true;
+        //~ }
         /* Always allow admin login */
         if(!Yii::app()->session['loginID'] && $this->event->get('controller')=='admin'){
             return true;
@@ -219,23 +218,16 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
      * Add this translation just after loaded all plugins
      */
     public function afterPluginLoad(){
-        $lang=Yii::app()->language;
-        /* fix language if en_us (LS bug ?) */
-        if($lang=='en_US'){
-
-        }
-        if(in_array($lang,$this->availableLanguages)){
-            // messageSource for this plugin:
-            $messageMaintenanceMode=array(
-                    'class' => 'CGettextMessageSource',
-                    'cacheID' => 'maintenanceModeLang',
-                    'cachingDuration'=>3600,
-                    'forceTranslation' => true,
-                    'useMoFile' => true,
-                    'basePath' => __DIR__ . DIRECTORY_SEPARATOR.'locale',
-                    'catalog'=>$lang
-            );
-            Yii::app()->setComponent('maintenanceMode',$messageMaintenanceMode);
-        }
+        // messageSource for this plugin:
+        $messageMaintenanceMode=array(
+            'class' => 'CGettextMessageSource',
+            'cacheID' => 'maintenanceModeLang',
+            'cachingDuration'=>3600,
+            'forceTranslation' => true,
+            'useMoFile' => true,
+            'basePath' => __DIR__ . DIRECTORY_SEPARATOR.'locale',
+            'catalog'=>'messages',// default from Yii
+        );
+        Yii::app()->setComponent('maintenanceMode',$messageMaintenanceMode);
     }
 }
