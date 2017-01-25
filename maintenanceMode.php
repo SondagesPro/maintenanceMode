@@ -108,7 +108,11 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             return;
         }
         /* Get actual time */
-        if($this->_inMaintenance() && !$this->_accessAllowed()){
+        if($this->_inMaintenance()){
+            if($this->_accessAllowed()){
+                // @todo add a flashMessage
+                return;
+            }
             $url=$this->get('urlRedirect');
             if($url){
                 $lang=Yii::app()->request->getParam('lang',Yii::app()->request->getParam('language'));
@@ -158,7 +162,8 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         parent::saveSettings($settings);
     }
     /**
-     *  @see ls\pluginmanager\PluginBase
+     * fix some settings
+     * @see ls\pluginmanager\PluginBase
      */
     public function getPluginSettings($getValues=true)
     {
@@ -191,12 +196,14 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
 
     /**
      * Allow access
+     * @return boolean
      */
     private function _accessAllowed(){
+        /* don't used : Yii::app()->user->isGuest : reset the App()->language */
         /* A1llow admin in condition */
-        //~ if(Yii::app()->session['loginID'] && !$this->get('superAdminOnly')){
-            //~ return true;
-        //~ }
+        if(Yii::app()->session['loginID'] && !$this->get('superAdminOnly')){
+            return true;
+        }
         /* Always allow admin login */
         if(!Yii::app()->session['loginID'] && $this->event->get('controller')=='admin'){
             return true;
@@ -216,6 +223,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
     }
     /**
      * Add this translation just after loaded all plugins
+     * @see event afterPluginLoad
      */
     public function afterPluginLoad(){
         // messageSource for this plugin:
