@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: maintenaceMode\n"
-"POT-Creation-Date: 2017-01-25 18:28+0100\n"
-"PO-Revision-Date: 2017-01-25 18:29+0100\n"
+"POT-Creation-Date: 2017-01-27 18:23+0100\n"
+"PO-Revision-Date: 2017-01-27 18:23+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -16,21 +16,34 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: maintenanceMode.php:95
+#: maintenanceMode.php:100
 msgid "You must download renderMessage plugin"
 msgstr "Vous devez télécharger le plugin renderMessage"
 
-#: maintenanceMode.php:100
+#: maintenanceMode.php:105
 msgid "You must activate renderMessage plugin"
 msgstr "Vous devez activer le plugin renderMessage"
 
-#: maintenanceMode.php:125 maintenanceMode.php:174
+#: maintenanceMode.php:123 maintenanceMode.php:180 maintenanceMode.php:255
+#: maintenanceMode.php:257
 msgid "This website are on maintenance mode."
 msgstr "Ce site internet est en maintenance."
 
-#: maintenanceMode.php:156
+#: maintenanceMode.php:160
 msgid "Bad url, you must review the redirect url."
 msgstr "L'adresse internet de redirection est invalide."
+
+#: maintenanceMode.php:181 maintenanceMode.php:267
+msgid "Warning"
+msgstr "Attention"
+
+#: maintenanceMode.php:181 maintenanceMode.php:267
+msgid ""
+"This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} "
+"minutes)."
+msgstr ""
+"Ce site internet sera en maintenance à {DATEFORMATTED} (dans "
+"{intval(MINUTES)} minutes)."
 
 #~ msgid "This website are in instance mode."
 #~ msgstr "This site internet est en maintenance."
