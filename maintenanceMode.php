@@ -29,15 +29,15 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         'dateTime' => array(
             'type' => 'date',
             'label' => 'Date / time for maintenance mode.',
-            'help' => 'Leave empty disable maintenance mode.',
+            'help' => 'Empty disable maintenance mode.',
             'default'=> '',
         ),
-        //~ 'warningDelay' => array(
-            //~ 'type' => 'string',
-            //~ 'label' => 'Delay to show the warning.',
-            //~ 'help' => 'Leaving empty to disable warning. Linute if is numeric, can use <a href="https://secure.php.net/manual/datetime.formats.relative.php">Relative Formats</a>',
-            //~ 'default'=> '',
-        //~ ),
+        'timeForDelay' => array(
+            'type' => 'string',
+            'label' => 'Delay for warning.',
+            'help' => 'In minutes',//@todo : relative format : ' or using <a href="//php.net/manual/datetime.formats.relative.php">Relative Formats</a>.',
+            'default'=> '',
+        ),
         'superAdminOnly' => array(
             'type'=>'boolean',
             'label'=>'Allow only super administrator.',
@@ -63,6 +63,15 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             ),
             'help'=>'Not needed if you use redirect',
             'default'=>'',
+        ),
+        'warningToShow' => array(
+            'type' => 'text',
+            'label' => 'Warning message.',
+            'htmlOptions'=>array(
+                'placeholder'=>'<strong>Warning</strong> This website close for maintenance at {DATEFORMATTED} (in {MINUTES} minutes).',
+            ),
+            'help' => '{DATEFORMATTED} was replaced by date (in user language format) and minutes by number of minutes before maintenance.',//@todo : allow EM with DATE/DATEFORMATTED AND MINUTES
+            'default'=> '',
         ),
         'disableMailSend' => array(
             'type'=>'boolean',
@@ -110,24 +119,13 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         /* Get actual time */
         if($this->_inMaintenance()){
             if($this->_accessAllowed()){
-                // @todo add a flashMessage
+                $renderFlashMessage = \renderMessage\flashMessageHelper::getInstance();
+                $renderFlashMessage->addFlashMessage($this->_translate("This website are on maintenance mode."));
                 return;
             }
-            $url=$this->get('urlRedirect');
-            if($url){
-                $lang=Yii::app()->request->getParam('lang',Yii::app()->request->getParam('language'));
-                if(!$lang){
-                    $lang=Yii::app()->getConfig('defaultlang');
-                }
-                $url=str_replace("{LANGUAGE}",$lang,$url);
-                header('Location: '.$url);
-            }
-            $message=$this->get('messageToShow',null,null,$this->_translate("This website are on maintenance mode."));
-            if(!$message){
-                $message=$this->_translate("This website are on maintenance mode.");
-            }
-            $renderMessage = new \renderMessage\messageHelper();
-            $renderMessage->render("<div class='alert alert-warning'>{$message}</div>");
+            $this->_endDuToMaintenance();
+        }elseif(!is_null($this->_inWarningMaintenance())){
+            $this->_warningDuToMaintenance();
         }
     }
     /**
@@ -153,6 +151,9 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             $oDateTimeConverter = new Date_Time_Converter($settings['dateTime'], $aDateFormatData['phpdate'] . " H:i");
             $settings['dateTime']=$oDateTimeConverter->convert("Y-m-d H:i");
         }
+        if(!empty($settings['timeForDelay'])){
+            $settings['timeForDelay']=filter_var($settings['timeForDelay'],FILTER_SANITIZE_NUMBER_INT);
+        }
         if(!empty($settings['urlRedirect'])){
             if(!filter_var($settings['urlRedirect'],FILTER_VALIDATE_URL)){
                 $settings['urlRedirect']="";
@@ -170,12 +171,14 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         $pluginSettings= parent::getPluginSettings($getValues);
         if($getValues){
             if(!empty($pluginSettings['dateTime']['current'])){
+                /* renderDate broken in LS core */
                 $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
                 $oDateTimeConverter = new Date_Time_Converter($pluginSettings['dateTime']['current'], "Y-m-d H:i");
                 $pluginSettings['dateTime']['current']=$oDateTimeConverter->convert($aDateFormatData['phpdate']." H:i");
             }
         }
         $pluginSettings['messageToShow']['htmlOptions']['placeholder']=$this->_translate("This website are on maintenance mode.");
+        $pluginSettings['warningToShow']['htmlOptions']['placeholder']=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
         return $pluginSettings;
     }
 
@@ -193,7 +196,22 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         }
         return false;
     }
-
+    /**
+     * Return if website warning a maintenance mode
+     * @return null|float (number of minutes)
+     */
+    private function _inWarningMaintenance(){
+        if($this->get('dateTime') && $this->get('timeForDelay')) {
+            $timeFoDelay=$this->get('timeForDelay');
+            $timeFoDelay=((is_numeric($timeFoDelay)) ? "-".$timeFoDelay." minutes" : $timeFoDelay);
+            $maintenanceDateTime=$this->get('dateTime').":00";
+            $maintenanceWarningTime=strtotime("{$maintenanceDateTime} {$timeFoDelay}");
+            if($maintenanceWarningTime < strtotime("now")){
+                return (strtotime($maintenanceDateTime)-strtotime("now"))/60;
+            }
+        }
+        return false;
+    }
     /**
      * Allow access
      * @return boolean
@@ -218,6 +236,53 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         return false;
     }
 
+    /**
+     * ending page due to maintenance
+     * @return void (and end)
+     */
+    private function _endDuToMaintenance(){
+        $url=$this->get('urlRedirect');
+        if($url){
+            //$lang=App()->language; // don't use it : must control if is in available language
+            $lang=Yii::app()->request->getParam('lang',Yii::app()->request->getParam('language'));
+            if(!$lang){
+                $lang=Yii::app()->getConfig('defaultlang');
+            }
+
+            $url=str_replace("{LANGUAGE}",$lang,$url);
+            header('Location: '.$url);
+        }
+        $message=$this->get('messageToShow',null,null,$this->_translate("This website are on maintenance mode."));
+        if(!$message){
+            $message=$this->_translate("This website are on maintenance mode.");
+        }
+        $renderMessage = new \renderMessage\messageHelper();
+        $renderMessage->render("<div class='alert alert-warning'>{$message}</div>");
+        /* rendering quit */
+    }
+
+    private function _warningDuToMaintenance(){
+        $message=$this->get('warningToShow');
+        if(!$message){
+            $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
+        }
+        $date=$this->get('dateTime').":00";
+        $aLanguage=getLanguageDetails(Yii::app()->language);
+        $oDateTimeConverter = new Date_Time_Converter($date, "Y-m-d H:i");
+        $aDateFormat=getDateFormatData($aLanguage['dateformat']);
+        $dateFormatted=$oDateTimeConverter->convert($aDateFormat['phpdate']." H:i");
+        $minutesBeforeMaintenance=$this->_inWarningMaintenance();
+        $aReplacement=array(
+            'DATE'=>$date,
+            'DATEFORMATTED'=>$dateFormatted,
+            'MINUTES'=>$minutesBeforeMaintenance,
+        );
+        $message=LimeExpressionManager::ProcessString($message, null, $aReplacement, false, 2, 1, false, false,true);
+        $renderFlashMessage = \renderMessage\flashMessageHelper::getInstance();
+        $timeFoDelay=$this->get('timeForDelay');
+        $class=($minutesBeforeMaintenance < ($timeFoDelay/10)) ? 'danger' : 'warning';
+        $renderFlashMessage->addFlashMessage($message,$class);
+    }
     private function _translate($string){
         return Yii::t('',$string,array(),'maintenanceMode');
     }
