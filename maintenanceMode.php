@@ -34,34 +34,28 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         ),
         'timeForDelay' => array(
             'type' => 'string',
-            'label' => 'Delay for warning.',
+            'label' => 'Show warning message delay.',
             'help' => 'In minutes',//@todo : relative format : ' or using <a href="//php.net/manual/datetime.formats.relative.php">Relative Formats</a>.',
-            'default'=> '',
+            'default'=> '60',
         ),
         'superAdminOnly' => array(
             'type'=>'boolean',
-            'label'=>'Allow only super administrator.',
+            'label'=>'Allow only super administrator to admin page.',
             'help'=>'Remind : admin login page are always accessible.',
             'default'=>0,
         ),
         'disablePublicPart' => array(
             'type'=>'boolean',
-            'label'=>'Disable public part even if admin.',
+            'label'=>'Disable public part for administrator users.',
+            'help'=>'Superadministrator(s) have always all access.',
             'default'=>0,
-        ),
-        'urlRedirect' => array(
-            'type'=>'string',
-            'label'=>'Url to redirect users',
-            'help'=>'Use {LANGUAGE} allow to use user language (ISO format if exist in this installation). Enter complete url only (with http:// or https://)',
-            'default'=>'',
         ),
         'messageToShow' => array(
             'type'=>'text',
-            'label'=>'Message to be shown',
+            'label'=>'Maintenance message',
             'htmlOptions'=>array(
                 'placeholder'=>'This website are on maintenance mode.',
             ),
-            'help'=>'Not needed if you use redirect',
             'default'=>'',
         ),
         'warningToShow' => array(
@@ -70,13 +64,19 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             'htmlOptions'=>array(
                 'placeholder'=>'<strong>Warning</strong> This website close for maintenance at {DATEFORMATTED} (in {MINUTES} minutes).',
             ),
-            'help' => '{DATEFORMATTED} was replaced by date (in user language format) and minutes by number of minutes before maintenance.',//@todo : allow EM with DATE/DATEFORMATTED AND MINUTES
+            'help' => 'You can use Expression manager : {DATEFORMATTED} was replaced by date in user language format, {DATE} by date in <code>Y-m-d H:i</code> format and {MINUTES} by number of minutes before maintenance.',
             'default'=> '',
         ),
         'disableMailSend' => array(
             'type'=>'boolean',
             'label'=>'Disable token emailing during maintenance',
             'default'=>1,
+        ),
+        'urlRedirect' => array(
+            'type'=>'string',
+            'label'=>'Url to redirect users',
+            'help'=>'Enter complete url only (with http:// or https://). {LANGUAGE} was replace by user language (ISO format if exist in this installation).',
+            'default'=>'',
         ),
     );
     public function init()
@@ -201,8 +201,8 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
      * @return null|float (number of minutes)
      */
     private function _inWarningMaintenance(){
-        if($this->get('dateTime') && $this->get('timeForDelay')) {
-            $timeFoDelay=$this->get('timeForDelay');
+        if($this->get('dateTime') && $this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default'])) {
+            $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
             $timeFoDelay=((is_numeric($timeFoDelay)) ? "-".$timeFoDelay." minutes" : $timeFoDelay);
             $maintenanceDateTime=$this->get('dateTime').":00";
             $maintenanceWarningTime=strtotime("{$maintenanceDateTime} {$timeFoDelay}");
