@@ -28,54 +28,34 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
     protected $settings = array(
         'dateTime' => array(
             'type' => 'date',
-            'label' => 'Date / time for maintenance mode.',
-            'help' => 'Empty disable maintenance mode.',
             'default'=> '',
         ),
         'timeForDelay' => array(
             'type' => 'string',
-            'label' => 'Show warning message delay.',
-            'help' => 'In minutes',//@todo : relative format : ' or using <a href="//php.net/manual/datetime.formats.relative.php">Relative Formats</a>.',
             'default'=> '60',
         ),
         'superAdminOnly' => array(
             'type'=>'boolean',
-            'label'=>'Allow only super administrator to admin page.',
-            'help'=>'Remind : admin login page are always accessible.',
             'default'=>0,
         ),
         'disablePublicPart' => array(
             'type'=>'boolean',
-            'label'=>'Disable public part for administrator users.',
-            'help'=>'Superadministrator(s) have always all access.',
             'default'=>0,
         ),
         'messageToShow' => array(
             'type'=>'text',
-            'label'=>'Maintenance message',
-            'htmlOptions'=>array(
-                'placeholder'=>'This website are on maintenance mode.',
-            ),
             'default'=>'',
         ),
         'warningToShow' => array(
             'type' => 'text',
-            'label' => 'Warning message.',
-            'htmlOptions'=>array(
-                'placeholder'=>'<strong>Warning</strong> This website close for maintenance at {DATEFORMATTED} (in {MINUTES} minutes).',
-            ),
-            'help' => 'You can use Expression manager : {DATEFORMATTED} was replaced by date in user language format, {DATE} by date in <code>Y-m-d H:i</code> format and {MINUTES} by number of minutes before maintenance.',
             'default'=> '',
         ),
         'disableMailSend' => array(
             'type'=>'boolean',
-            'label'=>'Disable token emailing during maintenance',
             'default'=>1,
         ),
         'urlRedirect' => array(
             'type'=>'string',
-            'label'=>'Url to redirect users',
-            'help'=>'Enter complete url only (with http:// or https://). {LANGUAGE} was replace by user language (ISO format if exist in this installation).',
             'default'=>'',
         ),
     );
@@ -87,6 +67,72 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
 
         /* To add own translation message source */
         $this->subscribe('afterPluginLoad');
+    }
+    /**
+     * fix some settings
+     * @see ls\pluginmanager\PluginBase
+     */
+    public function getPluginSettings($getValues=true)
+    {
+        $pluginSettings= parent::getPluginSettings($getValues);
+        $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
+        if($getValues){
+            if(!empty($pluginSettings['dateTime']['current'])){
+                /* renderDate broken in LS core */
+                $oDateTimeConverter = new Date_Time_Converter($pluginSettings['dateTime']['current'], "Y-m-d H:i");
+                $pluginSettings['dateTime']['current']=$oDateTimeConverter->convert($aDateFormatData['phpdate']." H:i");
+            }
+        }
+        /* Move settings partiallyfro translation */
+        $translatedSettings = array(
+            'dateTime' => array(
+                'label' => $this->_translate("Date / time for maintenance mode."),
+            ),
+            'timeForDelay' => array(
+                'label' => $this->_translate("Show warning message delay."),
+                'help' => $this->_translate("In minutes"),//@todo : relative format : ' or using <a href="//php.net/manual/datetime.formats.relative.php">Relative Formats</a>.',
+            ),
+            'superAdminOnly' => array(
+                'label'=> $this->_translate("Allow only super administrator to admin page."),
+                'help'=> $this->_translate("Admin login page are always accessible."),
+            ),
+            'disablePublicPart' => array(
+                'label'=> $this->_translate("Disable public part for administrator users."),
+                'help'=> $this->_translate("Even for Superadministrator(s)."),
+            ),
+            'messageToShow' => array(
+                'label'=> $this->_translate("Maintenance message"),
+                'htmlOptions'=>array(
+                    'placeholder'=> $this->_translate("This website are on maintenance mode."),
+                ),
+            ),
+            'warningToShow' => array(
+                'label' =>  $this->_translate("Warning message."),
+                'htmlOptions'=>array(
+                    'placeholder'=>sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes).")),
+                ),
+                'help' => $this->_translate("You can use Expression manager : {DATEFORMATTED} was replaced by date in user language format, {DATE} by date in <code>Y-m-d H:i</code> format and {MINUTES} by number of minutes before maintenance."),
+            ),
+            'disableMailSend' => array(
+                'label'=>$this->_translate("Disable token emailing during maintenance"),
+                'default'=>1,
+            ),
+            'urlRedirect' => array(
+                'label'=>$this->_translate("Url to redirect users"),
+                'help'=>$this->_translate("Enter complete url only (with http:// or https://). {LANGUAGE} was replace by user language (ISO format if exist in this installation)."),
+            ),
+        );
+        $pluginSettings=array_merge_recursive($pluginSettings,$translatedSettings);
+        /* Help of maintenance : add actual date */
+        $oDateTimeConverter = new Date_Time_Converter(date("Y-m-d H:i"), "Y-m-d H:i");
+        $dateTimeNow=$oDateTimeConverter->convert($aDateFormatData['phpdate']." H:i");
+        $pluginSettings['dateTime']['help']=sprintf($this->_translate("Actual date/time : %s. Empty disable maintenance mode."),$dateTimeNow);
+        /* Help on admin, but not super admin */
+        if(!Permission::model()->hasGlobalPermission("superadmin")){
+            $pluginSettings['superAdminOnly']['help']=sprintf("<div class='text-danger'> %s </div>",$this->_translate("This disable your access"));
+        }
+
+        return $pluginSettings;
     }
 
     /**
@@ -160,25 +206,6 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             }
         }
         parent::saveSettings($settings);
-    }
-    /**
-     * fix some settings
-     * @see ls\pluginmanager\PluginBase
-     */
-    public function getPluginSettings($getValues=true)
-    {
-        $pluginSettings= parent::getPluginSettings($getValues);
-        if($getValues){
-            if(!empty($pluginSettings['dateTime']['current'])){
-                /* renderDate broken in LS core */
-                $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
-                $oDateTimeConverter = new Date_Time_Converter($pluginSettings['dateTime']['current'], "Y-m-d H:i");
-                $pluginSettings['dateTime']['current']=$oDateTimeConverter->convert($aDateFormatData['phpdate']." H:i");
-            }
-        }
-        $pluginSettings['messageToShow']['htmlOptions']['placeholder']=$this->_translate("This website are on maintenance mode.");
-        $pluginSettings['warningToShow']['htmlOptions']['placeholder']=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
-        return $pluginSettings;
     }
 
     /**
