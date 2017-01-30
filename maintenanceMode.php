@@ -116,7 +116,6 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         if(Yii::app() instanceof CConsoleApplication) {
             return;
         }
-        /* Get actual time */
         if($this->_inMaintenance()){
             if($this->_accessAllowed()){
                 $renderFlashMessage = \renderMessage\flashMessageHelper::getInstance();
@@ -218,19 +217,20 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
      */
     private function _accessAllowed(){
         /* don't used : Yii::app()->user->isGuest : reset the App()->language */
-        /* A1llow admin in condition */
-        if(Yii::app()->session['loginID'] && !$this->get('superAdminOnly')){
+        /* Always allow superadmin */
+        if(Permission::model()->hasGlobalPermission("superadmin") && $this->event->get('controller')=='admin'){
             return true;
         }
         /* Always allow admin login */
         if(!Yii::app()->session['loginID'] && $this->event->get('controller')=='admin'){
             return true;
         }
-        /* Always allow superadmin */
-        if(Permission::model()->hasGlobalPermission("superadmin") && $this->event->get('controller')=='admin'){
+        /* Allow admin in condition : disablePublicPart is true (and not admin)*/
+        if(Yii::app()->session['loginID'] && $this->event->get('controller')!='admin' && !$this->get('disablePublicPart')){
             return true;
         }
-        if(Yii::app()->session['loginID'] && !$this->event->get('controller')=='admin' && $this->get('disablePublicPart')){
+        /* Allow admin in condition : superAdminOnly is false*/
+        if(Yii::app()->session['loginID'] && $this->event->get('controller')=='admin' && !$this->get('superAdminOnly')){
             return true;
         }
         return false;
