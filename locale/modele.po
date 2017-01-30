@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: maintenanceMode\n"
-"POT-Creation-Date: 2017-01-27 18:20+0100\n"
-"PO-Revision-Date: 2017-01-27 18:20+0100\n"
+"POT-Creation-Date: 2017-01-30 18:09+0100\n"
+"PO-Revision-Date: 2017-01-30 18:09+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -16,29 +16,95 @@ msgstr ""
 "X-Poedit-KeywordsList: _translate\n"
 "X-Poedit-SearchPath-0: .\n"
 
+#: maintenanceMode.php:89
+msgid "Date / time for maintenance mode."
+msgstr ""
+
+#: maintenanceMode.php:92
+msgid "Show warning message delay."
+msgstr ""
+
+#: maintenanceMode.php:93
+msgid "In minutes"
+msgstr ""
+
+#: maintenanceMode.php:96
+msgid "Allow only super administrator to admin page."
+msgstr ""
+
+#: maintenanceMode.php:97
+msgid "Admin login page are always accessible."
+msgstr ""
+
 #: maintenanceMode.php:100
-msgid "You must download renderMessage plugin"
+msgid "Disable public part for administrator users."
 msgstr ""
 
-#: maintenanceMode.php:105
-msgid "You must activate renderMessage plugin"
+#: maintenanceMode.php:101
+msgid "Even for Superadministrator(s)."
 msgstr ""
 
-#: maintenanceMode.php:123 maintenanceMode.php:180 maintenanceMode.php:255
-#: maintenanceMode.php:257
+#: maintenanceMode.php:104
+msgid "Maintenance message"
+msgstr ""
+
+#: maintenanceMode.php:106 maintenanceMode.php:168 maintenanceMode.php:283
+#: maintenanceMode.php:285
 msgid "This website are on maintenance mode."
 msgstr ""
 
-#: maintenanceMode.php:160
-msgid "Bad url, you must review the redirect url."
+#: maintenanceMode.php:110
+msgid "Warning message."
 msgstr ""
 
-#: maintenanceMode.php:181 maintenanceMode.php:267
+#: maintenanceMode.php:112 maintenanceMode.php:295
 msgid "Warning"
 msgstr ""
 
-#: maintenanceMode.php:181 maintenanceMode.php:267
+#: maintenanceMode.php:112 maintenanceMode.php:295
 msgid ""
 "This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} "
 "minutes)."
+msgstr ""
+
+#: maintenanceMode.php:114
+msgid ""
+"You can use Expression manager : {DATEFORMATTED} was replaced by date in "
+"user language format, {DATE} by date in <code>Y-m-d H:i</code> format and "
+"{MINUTES} by number of minutes before maintenance."
+msgstr ""
+
+#: maintenanceMode.php:117
+msgid "Disable token emailing during maintenance"
+msgstr ""
+
+#: maintenanceMode.php:121
+msgid "Url to redirect users"
+msgstr ""
+
+#: maintenanceMode.php:122
+msgid ""
+"Enter complete url only (with http:// or https://). {LANGUAGE} was replace "
+"by user language (ISO format if exist in this installation)."
+msgstr ""
+
+#: maintenanceMode.php:129
+#, php-format
+msgid "Actual date/time : %s. Empty disable maintenance mode."
+msgstr ""
+
+#: maintenanceMode.php:132
+msgid "This disable your access"
+msgstr ""
+
+#: maintenanceMode.php:146
+msgid "You must download renderMessage plugin"
+msgstr ""
+
+#: maintenanceMode.php:151
+msgid "You must activate renderMessage plugin"
+msgstr ""
+
+#: maintenanceMode.php:205
+msgid "Bad url, you must review the redirect url."
 msgstr ""
