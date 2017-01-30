@@ -231,6 +231,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
             $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
             $timeFoDelay=((is_numeric($timeFoDelay)) ? "-".$timeFoDelay." minutes" : $timeFoDelay);
             $maintenanceDateTime=$this->get('dateTime').":00";
+            $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
             $maintenanceWarningTime=strtotime("{$maintenanceDateTime} {$timeFoDelay}");
             if($maintenanceWarningTime < strtotime("now")){
                 return (strtotime($maintenanceDateTime)-strtotime("now"))/60;
@@ -293,14 +294,15 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         if(!$message){
             $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
         }
-        $date=$this->get('dateTime').":00";
+        $maintenanceDateTime=$this->get('dateTime').":00";
+        $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
         $aLanguage=getLanguageDetails(Yii::app()->language);
-        $oDateTimeConverter = new Date_Time_Converter($date, "Y-m-d H:i");
+        $oDateTimeConverter = new Date_Time_Converter($maintenanceDateTime, "Y-m-d H:i");
         $aDateFormat=getDateFormatData($aLanguage['dateformat']);
         $dateFormatted=$oDateTimeConverter->convert($aDateFormat['phpdate']." H:i");
         $minutesBeforeMaintenance=$this->_inWarningMaintenance();
         $aReplacement=array(
-            'DATE'=>$date,
+            'DATE'=>$maintenanceDateTime,
             'DATEFORMATTED'=>$dateFormatted,
             'MINUTES'=>$minutesBeforeMaintenance,
         );
