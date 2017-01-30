@@ -124,8 +124,10 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
         );
         $pluginSettings=array_merge_recursive($pluginSettings,$translatedSettings);
         /* Help of maintenance : add actual date */
-        $oDateTimeConverter = new Date_Time_Converter(date("Y-m-d H:i"), "Y-m-d H:i");
+        $dateTimeNow=dateShift(date('Y-m-d H:i:s'), "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
+        $oDateTimeConverter = new Date_Time_Converter($dateTimeNow, "Y-m-d H:i");
         $dateTimeNow=$oDateTimeConverter->convert($aDateFormatData['phpdate']." H:i");
+
         $pluginSettings['dateTime']['help']=sprintf($this->_translate("Actual date/time : %s. Empty disable maintenance mode."),$dateTimeNow);
         /* Help on admin, but not super admin */
         if(!Permission::model()->hasGlobalPermission("superadmin")){
