@@ -6,7 +6,7 @@
  * @copyright 2017 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 0.0.0
+ * @version 0.0.2
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -229,7 +229,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
      * @return null|float (number of minutes)
      */
     private function _inWarningMaintenance(){
-        if($this->get('dateTime') && $this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default'])) {
+        if(trim($this->get('dateTime')) && trim($this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']))) {
             $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
             $timeFoDelay=((is_numeric($timeFoDelay)) ? "-".$timeFoDelay." minutes" : $timeFoDelay);
             $maintenanceDateTime=$this->get('dateTime').":00";
@@ -292,27 +292,29 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
     }
 
     private function _warningDuToMaintenance(){
-        $message=$this->get('warningToShow');
-        if(!$message){
-            $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
-        }
-        $maintenanceDateTime=$this->get('dateTime').":00";
-        $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
-        $aLanguage=getLanguageDetails(Yii::app()->language);
-        $oDateTimeConverter = new Date_Time_Converter($maintenanceDateTime, "Y-m-d H:i");
-        $aDateFormat=getDateFormatData($aLanguage['dateformat']);
-        $dateFormatted=$oDateTimeConverter->convert($aDateFormat['phpdate']." H:i");
         $minutesBeforeMaintenance=$this->_inWarningMaintenance();
-        $aReplacement=array(
-            'DATE'=>$maintenanceDateTime,
-            'DATEFORMATTED'=>$dateFormatted,
-            'MINUTES'=>$minutesBeforeMaintenance,
-        );
-        $message=LimeExpressionManager::ProcessString($message, null, $aReplacement, false, 2, 1, false, false,true);
-        $renderFlashMessage = \renderMessage\flashMessageHelper::getInstance();
-        $timeFoDelay=$this->get('timeForDelay');
-        $class=($minutesBeforeMaintenance < ($timeFoDelay/10)) ? 'danger' : 'warning';
-        $renderFlashMessage->addFlashMessage($message,$class);
+        if($minutesBeforeMaintenance){
+            $message=$this->get('warningToShow');
+            if(!$message){
+                $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
+            }
+            $maintenanceDateTime=$this->get('dateTime').":00";
+            $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
+            $aLanguage=getLanguageDetails(Yii::app()->language);
+            $oDateTimeConverter = new Date_Time_Converter($maintenanceDateTime, "Y-m-d H:i");
+            $aDateFormat=getDateFormatData($aLanguage['dateformat']);
+            $dateFormatted=$oDateTimeConverter->convert($aDateFormat['phpdate']." H:i");
+            $aReplacement=array(
+                'DATE'=>$maintenanceDateTime,
+                'DATEFORMATTED'=>$dateFormatted,
+                'MINUTES'=>$minutesBeforeMaintenance,
+            );
+            $message=LimeExpressionManager::ProcessString($message, null, $aReplacement, false, 2, 1, false, false,true);
+            $renderFlashMessage = \renderMessage\flashMessageHelper::getInstance();
+            $timeFoDelay=$this->get('timeForDelay');
+            $class=($minutesBeforeMaintenance < ($timeFoDelay/10)) ? 'danger' : 'warning';
+            $renderFlashMessage->addFlashMessage($message,$class);
+        }
     }
     private function _translate($string){
         return Yii::t('',$string,array(),'maintenanceMode');
