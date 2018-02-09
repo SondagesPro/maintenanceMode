@@ -6,7 +6,7 @@
  * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 0.1.0
+ * @version 0.1.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -62,11 +62,14 @@ class maintenanceMode extends PluginBase {
     public function init()
     {
         $this->subscribe('beforeControllerAction');
+        $this->subscribe('beforeSurveyPage','beforeControllerAction');
+
         $this->subscribe('beforeTokenEmail');
         $this->subscribe('beforeActivate');
 
         /* To add own translation message source */
         $this->subscribe('afterPluginLoad');
+        
     }
     /**
      * fix some settings
