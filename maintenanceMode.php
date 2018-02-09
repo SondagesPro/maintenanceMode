@@ -3,10 +3,10 @@
  * maintenanceMode : Put installation on Maintenance mode
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2017 Denis Chenu <http://www.sondages.pro>
+ * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 0.0.1
+ * @version 0.1.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -18,7 +18,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-class maintenanceMode extends \ls\pluginmanager\PluginBase {
+class maintenanceMode extends PluginBase {
     /* DbStorage for date of maintenance and redirect url */
     protected $storage = 'DbStorage';
 
@@ -75,6 +75,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
     public function getPluginSettings($getValues=true)
     {
         $pluginSettings= parent::getPluginSettings($getValues);
+        $apiVersion =  \renderMessage\messageHelper::rmLsApiVersion();
         $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
         if($getValues){
             if(!empty($pluginSettings['dateTime']['current'])){
@@ -122,18 +123,23 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
                 'help'=>$this->_translate("Enter complete url only (with http:// or https://). {LANGUAGE} was replace by user language (ISO format if exist in this installation)."),
             ),
         );
+
         $pluginSettings=array_merge_recursive($pluginSettings,$translatedSettings);
         /* Help of maintenance : add actual date */
         $dateTimeNow=dateShift(date('Y-m-d H:i:s'), "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
         $oDateTimeConverter = new Date_Time_Converter($dateTimeNow, "Y-m-d H:i");
         $dateTimeNow=$oDateTimeConverter->convert($aDateFormatData['phpdate']." H:i");
-
         $pluginSettings['dateTime']['help']=sprintf($this->_translate("Actual date/time : %s. Empty disable maintenance mode."),$dateTimeNow);
+        if($apiVersion == "2_06") {
+            $pluginSettings['dateTime']['type'] = 'string';
+            $pluginSettings['dateTime']['help'] .= sprintf($this->_translate("<br>Date time in this format : %s"),$aDateFormatData['phpdate']." H:i");
+            unset($pluginSettings['timeForDelay']);
+            unset($pluginSettings['warningToShow']);
+        }
         /* Help on admin, but not super admin */
         if(!Permission::model()->hasGlobalPermission("superadmin")){
             $pluginSettings['superAdminOnly']['help']=sprintf("<div class='text-danger'> %s </div>",$this->_translate("This disable your access"));
         }
-
         return $pluginSettings;
     }
 
@@ -193,6 +199,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
      */
     public function saveSettings($settings)
     {
+        $apiVersion =  \renderMessage\messageHelper::rmLsApiVersion();
         if(!empty($settings['dateTime'])){
             $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
             $oDateTimeConverter = new Date_Time_Converter($settings['dateTime'], $aDateFormatData['phpdate'] . " H:i");
@@ -248,7 +255,7 @@ class maintenanceMode extends \ls\pluginmanager\PluginBase {
     private function _accessAllowed(){
         /* don't used : Yii::app()->user->isGuest : reset the App()->language */
         /* Always allow superadmin */
-        if(Permission::model()->hasGlobalPermission("superadmin") && $this->event->get('controller')=='admin'){
+        if (Permission::model()->hasGlobalPermission("superadmin") && ($this->event->get('controller')=='admin' || $this->event->get('controller')=='plugins')) {
             return true;
         }
         /* Always allow admin login */
