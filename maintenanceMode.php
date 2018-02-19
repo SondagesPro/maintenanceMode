@@ -63,7 +63,8 @@ class maintenanceMode extends PluginBase {
     {
         $this->subscribe('beforeControllerAction');
         $this->subscribe('beforeSurveyPage','beforeControllerAction');
-
+        /* diable login (2.6) for admin */
+        $this->subscribe('newUserSession');
         $this->subscribe('beforeTokenEmail');
         $this->subscribe('beforeActivate');
 
@@ -71,9 +72,23 @@ class maintenanceMode extends PluginBase {
         $this->subscribe('afterPluginLoad');
         
     }
+    public function newUserSession() {
+        if($this->get('superAdminOnly') && $this->_inMaintenance()){
+            $identity = $this->getEvent()->get('identity');
+            $sUser  = $identity->username;
+            $oUser = $this->api->getUserByName($sUser);
+            if($oUser) {
+                if(!Permission::model()->hasGlobalPermission('superadmin','read',$oUser->uid)) {
+                    $identity->id = null;
+                    $this->getEvent()->set('result', new LSAuthResult(99, $this->_translate("This website are on maintenance mode.")));
+                    $this->getEvent()->stop();
+                }
+            }
+        }
+    }
     /**
      * fix some settings
-     * @see ls\pluginmanager\PluginBase
+     * @see PluginBase
      */
     public function getPluginSettings($getValues=true)
     {
