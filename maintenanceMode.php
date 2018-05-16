@@ -6,7 +6,7 @@
  * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 0.1.1
+ * @version 0.1.2
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -61,9 +61,12 @@ class maintenanceMode extends PluginBase {
     );
     public function init()
     {
+        if(intval(App()->getConfig('versionnumber')) >= 3) {
+            return;
+        }
         $this->subscribe('beforeControllerAction');
         $this->subscribe('beforeSurveyPage','beforeControllerAction');
-        /* diable login (2.6) for admin */
+        /* disable login (2.6) for admin */
         $this->subscribe('newUserSession');
         $this->subscribe('beforeTokenEmail');
         $this->subscribe('beforeActivate');
@@ -92,6 +95,14 @@ class maintenanceMode extends PluginBase {
      */
     public function getPluginSettings($getValues=true)
     {
+        if(intval(App()->getConfig('versionnumber')) >= 3) {
+            return array(
+                'disabled' => array(
+                    'type' => 'info',
+                    'content'=> CHtml::tag("div",array('class'=>'alert alert-danger'),$this->gT('This plugin is not compatible with your version of LimeSurvey. Plugin deactivated')),
+                ),
+            );
+        }
         $pluginSettings= parent::getPluginSettings($getValues);
         $apiVersion =  \renderMessage\messageHelper::rmLsApiVersion();
         $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
