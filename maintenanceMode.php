@@ -6,7 +6,7 @@
  * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 0.1.1
+ * @version 1.0.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -61,17 +61,31 @@ class maintenanceMode extends PluginBase {
     );
     public function init()
     {
+        if(intval(App()->getConfig('versionnumber')) < 3) {
+            return;
+        }
+        $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
+        if(!$oRenderMessage) {
+            $this->log("You must download and activate renderMessage plugin",'error');
+            return;
+        } elseif(!$oRenderMessage->active) {
+            $this->log("You must activate renderMessage plugin",'error');
+            return;
+        }
+
         $this->subscribe('beforeControllerAction');
         $this->subscribe('beforeSurveyPage','beforeControllerAction');
-        /* diable login (2.6) for admin */
+        /* disable login for admin */
         $this->subscribe('newUserSession');
+
         $this->subscribe('beforeTokenEmail');
         $this->subscribe('beforeActivate');
 
-        /* To add own translation message source */
-        $this->subscribe('afterPluginLoad');
-        
+        /* This need twigExtendByPlugins */
+        $this->subscribe('getPluginTwigPath');
+    
     }
+
     public function newUserSession() {
         if($this->get('superAdminOnly') && $this->_inMaintenance()){
             $identity = $this->getEvent()->get('identity');
@@ -80,12 +94,20 @@ class maintenanceMode extends PluginBase {
             if($oUser) {
                 if(!Permission::model()->hasGlobalPermission('superadmin','read',$oUser->uid)) {
                     $identity->id = null;
-                    $this->getEvent()->set('result', new LSAuthResult(99, $this->_translate("This website are on maintenance mode.")));
+                    $this->getEvent()->set('result', new LSAuthResult(99, $this->gT("This website are on maintenance mode.")));
                     $this->getEvent()->stop();
                 }
             }
         }
     }
+    
+    /* @see plugin event */
+    public function getPluginTwigPath() 
+    {
+        $viewPath = dirname(__FILE__)."/views";
+        $this->getEvent()->append('add', array($viewPath));
+    }
+
     /**
      * fix some settings
      * @see PluginBase
@@ -93,7 +115,6 @@ class maintenanceMode extends PluginBase {
     public function getPluginSettings($getValues=true)
     {
         $pluginSettings= parent::getPluginSettings($getValues);
-        $apiVersion =  \renderMessage\messageHelper::rmLsApiVersion();
         $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
         if($getValues){
             if(!empty($pluginSettings['dateTime']['current'])){
@@ -105,40 +126,44 @@ class maintenanceMode extends PluginBase {
         /* Move settings partiallyfro translation */
         $translatedSettings = array(
             'dateTime' => array(
-                'label' => $this->_translate("Date / time for maintenance mode."),
+                'label' => $this->gT("Date / time for maintenance mode."),
             ),
             'timeForDelay' => array(
-                'label' => $this->_translate("Show warning message delay."),
-                'help' => $this->_translate("In minutes"),//@todo : relative format : ' or using <a href="//php.net/manual/datetime.formats.relative.php">Relative Formats</a>.',
+                'label' => $this->gT("Show warning message delay."),
+                'help' => $this->gT("In minutes"),//@todo : relative format : ' or using <a href="//php.net/manual/datetime.formats.relative.php">Relative Formats</a>.',
             ),
             'superAdminOnly' => array(
-                'label'=> $this->_translate("Allow only super administrator to admin page."),
-                'help'=> $this->_translate("Admin login page are always accessible."),
+                'label'=> $this->gT("Allow only super administrator to admin page."),
+                'help'=> $this->gT("Admin login page are always accessible."),
             ),
             'disablePublicPart' => array(
-                'label'=> $this->_translate("Disable public part for administrator users."),
-                'help'=> $this->_translate("Even for Superadministrator(s)."),
+                'label'=> $this->gT("Disable public part for administrator users."),
+                'help'=> $this->gT("Even for Superadministrator(s)."),
             ),
             'messageToShow' => array(
-                'label'=> $this->_translate("Maintenance message"),
+                'label'=> $this->gT("Maintenance message"),
                 'htmlOptions'=>array(
-                    'placeholder'=> $this->_translate("This website are on maintenance mode."),
+                    'placeholder'=> $this->gT("This website are on maintenance mode."),
                 ),
+                'help' => $this->gT("Default message was translated according to user language."),
             ),
             'warningToShow' => array(
-                'label' =>  $this->_translate("Warning message."),
+                'label' =>  $this->gT("Warning message."),
                 'htmlOptions'=>array(
-                    'placeholder'=>sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes).")),
+                    'placeholder'=>sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->gT("Warning"),$this->gT("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes).")),
                 ),
-                'help' => $this->_translate("You can use Expression manager : {DATEFORMATTED} was replaced by date in user language format, {DATE} by date in <code>Y-m-d H:i</code> format and {MINUTES} by number of minutes before maintenance."),
+                'help' => sprintf(
+                    $this->gT("You can use Expression manager : %s was replaced by date in user language format, %s by date in %s format and %s by number of minutes before maintenance."),
+                    "{DATEFORMATTED}","{DATE}","<code>Y-m-d H:i</code>","{MINUTES}"
+                ),
             ),
             'disableMailSend' => array(
-                'label'=>$this->_translate("Disable token emailing during maintenance"),
+                'label'=>$this->gT("Disable token emailing during maintenance"),
                 'default'=>1,
             ),
             'urlRedirect' => array(
-                'label'=>$this->_translate("Url to redirect users"),
-                'help'=>$this->_translate("Enter complete url only (with http:// or https://). {LANGUAGE} was replace by user language (ISO format if exist in this installation)."),
+                'label'=>$this->gT("Url to redirect users"),
+                'help'=>$this->gT("Enter complete url only (with http:// or https://). {LANGUAGE} was replace by user language (ISO format if exist in this installation)."),
             ),
         );
 
@@ -147,16 +172,11 @@ class maintenanceMode extends PluginBase {
         $dateTimeNow=dateShift(date('Y-m-d H:i:s'), "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
         $oDateTimeConverter = new Date_Time_Converter($dateTimeNow, "Y-m-d H:i");
         $dateTimeNow=$oDateTimeConverter->convert($aDateFormatData['phpdate']." H:i");
-        $pluginSettings['dateTime']['help']=sprintf($this->_translate("Actual date/time : %s. Empty disable maintenance mode."),$dateTimeNow);
-        if($apiVersion == "2_06") {
-            $pluginSettings['dateTime']['type'] = 'string';
-            $pluginSettings['dateTime']['help'] .= sprintf($this->_translate("<br>Date time in this format : %s"),$aDateFormatData['phpdate']." H:i");
-            unset($pluginSettings['timeForDelay']);
-            unset($pluginSettings['warningToShow']);
-        }
+        $pluginSettings['dateTime']['help']=sprintf($this->gT("Actual date/time : %s. Empty disable maintenance mode."),$dateTimeNow);
+
         /* Help on admin, but not super admin */
         if(!Permission::model()->hasGlobalPermission("superadmin")){
-            $pluginSettings['superAdminOnly']['help']=sprintf("<div class='text-danger'> %s </div>",$this->_translate("This disable your access"));
+            $pluginSettings['superAdminOnly']['help']=sprintf("<div class='text-danger'> %s </div>",$this->gT("This disable your access"));
         }
         return $pluginSettings;
     }
@@ -166,17 +186,25 @@ class maintenanceMode extends PluginBase {
      */
     public function beforeActivate()
     {
-        $oToolsSmartDomDocument = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
-        if(!$oToolsSmartDomDocument)
-        {
-            $this->getEvent()->set('message', $this->_translate("You must download renderMessage plugin"));
+        // Control LimeSurvey version
+        $lsVersion = floatval(Yii::app()->getConfig('versionnumber'));
+        if($lsVersion < 3) {
+            $this->getEvent()->set('message', gT("Only for LimeSurvey 3.0.0 and up version"));
+            $this->getEvent()->set('success', false);
+            return;
+        }
+        if($lsVersion >= 4) {// See https://github.com/LimeSurvey/LimeSurvey/pull/1078
+            return;
+        }
+        $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
+        if(!$oRenderMessage) {
+            $this->getEvent()->set('message', gT("You must download renderMessage plugin"));
+            $this->getEvent()->set('success', false);
+        } elseif(!$oRenderMessage->active) {
+            $this->getEvent()->set('message', gT("You must activate renderMessage plugin"));
             $this->getEvent()->set('success', false);
         }
-        elseif(!$oToolsSmartDomDocument->active)
-        {
-            $this->getEvent()->set('message', $this->_translate("You must activate renderMessage plugin"));
-            $this->getEvent()->set('success', false);
-        }
+
     }
 
     /*
@@ -184,18 +212,27 @@ class maintenanceMode extends PluginBase {
      */
     public function beforeControllerAction()
     {
+        /* Don't add it 2 times, strangely beforeControllerAction happen 2 times */
+        static $done;
         /* no maintenance mode for command */
         if(Yii::app() instanceof CConsoleApplication) {
             return;
         }
+        if($done) {
+            return;
+        }
+        /* Do action only one time : beforeControllerAction happen 2 times , @todo report issue */
+        $this->unsubscribe('beforeControllerAction');
+        $done = true;
         if($this->_inMaintenance()){
             if($this->_accessAllowed()){
-                $renderFlashMessage = \renderMessage\flashMessageHelper::getInstance();
-                $renderFlashMessage->addFlashMessage($this->_translate("This website are on maintenance mode."));
+                $this->_addFlashMessage($this->gT("This website are on maintenance mode."));
                 return;
             }
             $this->_endDuToMaintenance();
-        }elseif(!is_null($this->_inWarningMaintenance())){
+            App()->end(); // Not needed , but more clear
+        }
+        if(!is_null($this->_inWarningMaintenance())){
             $this->_warningDuToMaintenance();
         }
     }
@@ -217,7 +254,6 @@ class maintenanceMode extends PluginBase {
      */
     public function saveSettings($settings)
     {
-        $apiVersion =  \renderMessage\messageHelper::rmLsApiVersion();
         if(!empty($settings['dateTime'])){
             $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
             $oDateTimeConverter = new Date_Time_Converter($settings['dateTime'], $aDateFormatData['phpdate'] . " H:i");
@@ -229,7 +265,7 @@ class maintenanceMode extends PluginBase {
         if(!empty($settings['urlRedirect'])){
             if(!filter_var($settings['urlRedirect'],FILTER_VALIDATE_URL)){
                 $settings['urlRedirect']="";
-                Yii::app()->setFlashMessage($this->_translate("Bad url, you must review the redirect url."),'error');
+                Yii::app()->setFlashMessage($this->gT("Bad url, you must review the redirect url."),'error');
             }
         }
         parent::saveSettings($settings);
@@ -303,17 +339,16 @@ class maintenanceMode extends PluginBase {
             if(!$lang){
                 $lang=Yii::app()->getConfig('defaultlang');
             }
-
             $url=str_replace("{LANGUAGE}",$lang,$url);
             header('Location: '.$url);
         }
-        $message=$this->get('messageToShow',null,null,$this->_translate("This website are on maintenance mode."));
+        $message = $this->get('messageToShow',null,null,$this->gT("This website are on maintenance mode."));
         if(!$message){
-            $message=$this->_translate("This website are on maintenance mode.");
+            $message = $this->gT("This website are on maintenance mode.");
         }
-        $renderMessage = new \renderMessage\messageHelper();
-        $renderMessage->render("<div class='alert alert-warning'>{$message}</div>");
         /* rendering quit */
+        //$this->_render($message);
+        \renderMessage\messageHelper::renderAlert($message,'warning');
     }
 
     private function _warningDuToMaintenance(){
@@ -321,7 +356,7 @@ class maintenanceMode extends PluginBase {
         if($minutesBeforeMaintenance){
             $message=$this->get('warningToShow');
             if(!$message){
-                $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->_translate("Warning"),$this->_translate("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
+                $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->gT("Warning"),$this->gT("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
             }
             $maintenanceDateTime=$this->get('dateTime').":00";
             $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
@@ -335,30 +370,47 @@ class maintenanceMode extends PluginBase {
                 'MINUTES'=>$minutesBeforeMaintenance,
             );
             $message=LimeExpressionManager::ProcessString($message, null, $aReplacement, false, 2, 1, false, false,true);
-            $renderFlashMessage = \renderMessage\flashMessageHelper::getInstance();
             $timeFoDelay=$this->get('timeForDelay');
             $class=($minutesBeforeMaintenance < ($timeFoDelay/10)) ? 'danger' : 'warning';
-            $renderFlashMessage->addFlashMessage($message,$class);
+            $this->_addFlashMessage($message,$class);
         }
     }
-    private function _translate($string){
-        return Yii::t('',$string,array(),'maintenanceMode');
-    }
+
     /**
-     * Add this translation just after loaded all plugins
-     * @see event afterPluginLoad
+     * @inheritdoc
+     * With default escape mode to 'unescaped'
      */
-    public function afterPluginLoad(){
-        // messageSource for this plugin:
-        $messageMaintenanceMode=array(
-            'class' => 'CGettextMessageSource',
-            'cacheID' => 'maintenanceModeLang',
-            'cachingDuration'=>3600,
-            'forceTranslation' => true,
-            'useMoFile' => true,
-            'basePath' => __DIR__ . DIRECTORY_SEPARATOR.'locale',
-            'catalog'=>'messages',// default from Yii
-        );
-        Yii::app()->setComponent('maintenanceMode',$messageMaintenanceMode);
+    public function gT($sToTranslate, $sEscapeMode = 'unescaped', $sLanguage = null)
+    {
+        return parent::gT($sToTranslate, $sEscapeMode, $sLanguage);
     }
+
+    /**
+     * @inheritdoc
+     * Adding message to vardump if user activate debug mode
+     */
+    public function log($message, $level = \CLogger::LEVEL_TRACE)
+    {
+        parent::log($message, $level);
+        Yii::log("[".get_class($this)."] ".$message, $level, 'vardump');
+    }
+    
+    /**
+     * Add a flash message to user
+     * @todo
+     * @return void
+     */
+    private function _addFlashMessage($message,$class='warning')
+    {
+        if(Yii::app()->getRequest()->isAjaxRequest) {
+            return;
+        }
+        $controller = Yii::app()->getController()->getId();
+        if($controller=='admin') {
+            Yii::app()->setFlashMessage($message, $class);
+            return;
+        }
+        \renderMessage\messageHelper::addFlashMessage($message,$class);
+    }
+
 }
