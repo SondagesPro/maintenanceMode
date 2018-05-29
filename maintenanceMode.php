@@ -6,7 +6,7 @@
  * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.0.0
+ * @version 1.0.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -214,6 +214,7 @@ class maintenanceMode extends PluginBase {
     {
         /* Don't add it 2 times, strangely beforeControllerAction happen 2 times */
         static $done;
+        
         /* no maintenance mode for command */
         if(Yii::app() instanceof CConsoleApplication) {
             return;
@@ -278,10 +279,13 @@ class maintenanceMode extends PluginBase {
     private function _inMaintenance(){
         if($this->get('dateTime')) {
             $maintenanceDateTime=$this->get('dateTime').":00";
-            $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
-            if(strtotime($maintenanceDateTime) < strtotime("now")){
+            $dateTimeNow=dateShift(date('Y-m-d H:i:s'), "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
+            $this->log("maintenanceDateTime : $maintenanceDateTime");
+            if(strtotime($maintenanceDateTime) < strtotime($dateTimeNow)){
+                $this->log("In maintenance");
                 return true;
             }
+            $this->log("Not in manintenance");
         }
         return false;
     }
@@ -294,10 +298,10 @@ class maintenanceMode extends PluginBase {
             $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
             $timeFoDelay=((is_numeric($timeFoDelay)) ? "-".$timeFoDelay." minutes" : $timeFoDelay);
             $maintenanceDateTime=$this->get('dateTime').":00";
-            $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
             $maintenanceWarningTime=strtotime("{$maintenanceDateTime} {$timeFoDelay}");
-            if($maintenanceWarningTime < strtotime("now")){
-                return (strtotime($maintenanceDateTime)-strtotime("now"))/60;
+            $dateTimeNow=dateShift(date('Y-m-d H:i:s'), "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
+            if($maintenanceWarningTime < strtotime($dateTimeNow)){
+                return (strtotime($maintenanceDateTime)-strtotime($dateTimeNow))/60;
             }
         }
         return false;
@@ -359,7 +363,7 @@ class maintenanceMode extends PluginBase {
                 $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->gT("Warning"),$this->gT("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
             }
             $maintenanceDateTime=$this->get('dateTime').":00";
-            $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
+            //~ $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
             $aLanguage=getLanguageDetails(Yii::app()->language);
             $oDateTimeConverter = new Date_Time_Converter($maintenanceDateTime, "Y-m-d H:i");
             $aDateFormat=getDateFormatData($aLanguage['dateformat']);
@@ -369,7 +373,7 @@ class maintenanceMode extends PluginBase {
                 'DATEFORMATTED'=>$dateFormatted,
                 'MINUTES'=>$minutesBeforeMaintenance,
             );
-            $message=LimeExpressionManager::ProcessString($message, null, $aReplacement, false, 2, 1, false, false,true);
+            $message=LimeExpressionManager::ProcessStepString($message, $aReplacement, 3,true);
             $timeFoDelay=$this->get('timeForDelay');
             $class=($minutesBeforeMaintenance < ($timeFoDelay/10)) ? 'danger' : 'warning';
             $this->_addFlashMessage($message,$class);
