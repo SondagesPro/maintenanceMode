@@ -6,7 +6,7 @@
  * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.0.1
+ * @version 1.1.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -316,16 +316,20 @@ class maintenanceMode extends PluginBase {
         if (Permission::model()->hasGlobalPermission("superadmin") && ($this->event->get('controller')=='admin' || $this->event->get('controller')=='plugins')) {
             return true;
         }
+        /* Allow pluginmanager access for user with settings update */
+        if(Permission::model()->hasGlobalPermission("settings",'update') && $this->event->get('controller') == 'admin' && $this->event->get('action') == 'pluginmanager') {
+            return true;
+        }
         /* Always allow admin login */
-        if(!Yii::app()->session['loginID'] && $this->event->get('controller')=='admin'){
+        if(!Permission::getUserId() && $this->event->get('controller')=='admin'){
             return true;
         }
         /* Allow admin in condition : disablePublicPart is true (and not admin)*/
-        if(Yii::app()->session['loginID'] && $this->event->get('controller')!='admin' && !$this->get('disablePublicPart')){
+        if(Permission::getUserId() && $this->event->get('controller')!='admin' && !$this->get('disablePublicPart')){
             return true;
         }
         /* Allow admin in condition : superAdminOnly is false*/
-        if(Yii::app()->session['loginID'] && $this->event->get('controller')=='admin' && !$this->get('superAdminOnly')){
+        if(Permission::getUserId() && $this->event->get('controller')=='admin' && !$this->get('superAdminOnly')){
             return true;
         }
         return false;
