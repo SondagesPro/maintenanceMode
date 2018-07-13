@@ -6,7 +6,7 @@
  * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.1.0
+ * @version 1.2.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -130,7 +130,7 @@ class maintenanceMode extends PluginBase {
             ),
             'timeForDelay' => array(
                 'label' => $this->gT("Show warning message delay."),
-                'help' => $this->gT("In minutes"),//@todo : relative format : ' or using <a href="//php.net/manual/datetime.formats.relative.php">Relative Formats</a>.',
+                'help' => $this->gT("In minutes or with english string."),
             ),
             'superAdminOnly' => array(
                 'label'=> $this->gT("Allow only super administrator to admin page."),
@@ -295,13 +295,16 @@ class maintenanceMode extends PluginBase {
      */
     private function _inWarningMaintenance(){
         if(trim($this->get('dateTime')) && trim($this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']))) {
-            $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
-            $timeFoDelay=((is_numeric($timeFoDelay)) ? "-".$timeFoDelay." minutes" : $timeFoDelay);
             $maintenanceDateTime=$this->get('dateTime').":00";
-            $maintenanceWarningTime=strtotime("{$maintenanceDateTime} {$timeFoDelay}");
-            $dateTimeNow=dateShift(date('Y-m-d H:i:s'), "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
-            if($maintenanceWarningTime < strtotime($dateTimeNow)){
-                return (strtotime($maintenanceDateTime)-strtotime($dateTimeNow))/60;
+            $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
+            $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
+            if(is_numeric($timeFoDelay) || strval(intval($timeFoDelay)) == strval($timeFoDelay) ) {
+                $maintenanceWarningTime=strtotime($maintenanceDateTime) - $timeFoDelay*60;
+            } else {
+                $maintenanceWarningTime=strtotime($timeFoDelay);
+            }
+            if($maintenanceWarningTime < strtotime("now")){
+                return (strtotime($maintenanceDateTime) - strtotime("now"))/60;
             }
         }
         return false;
