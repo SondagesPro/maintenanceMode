@@ -6,7 +6,7 @@
  * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 0.1.2
+ * @version 0.2.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -120,7 +120,7 @@ class maintenanceMode extends PluginBase {
             ),
             'timeForDelay' => array(
                 'label' => $this->_translate("Show warning message delay."),
-                'help' => $this->_translate("In minutes"),//@todo : relative format : ' or using <a href="//php.net/manual/datetime.formats.relative.php">Relative Formats</a>.',
+                'help' => $this->_translate("In minutes or with english string."),
             ),
             'superAdminOnly' => array(
                 'label'=> $this->_translate("Allow only super administrator to admin page."),
@@ -199,16 +199,24 @@ class maintenanceMode extends PluginBase {
         if(Yii::app() instanceof CConsoleApplication) {
             return;
         }
+        static $done = false;
+        if($done) {
+            return;
+        }
         if($this->_inMaintenance()){
             if($this->_accessAllowed()){
                 $renderFlashMessage = \renderMessage\flashMessageHelper::getInstance();
                 $renderFlashMessage->addFlashMessage($this->_translate("This website are on maintenance mode."));
+                $done = true;
                 return;
             }
+            $done = true;
             $this->_endDuToMaintenance();
         }elseif(!is_null($this->_inWarningMaintenance())){
+            $done = true;
             $this->_warningDuToMaintenance();
         }
+        $done = true;
     }
     /**
      * Disable sending of email
@@ -266,13 +274,16 @@ class maintenanceMode extends PluginBase {
      */
     private function _inWarningMaintenance(){
         if(trim($this->get('dateTime')) && trim($this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']))) {
-            $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
-            $timeFoDelay=((is_numeric($timeFoDelay)) ? "-".$timeFoDelay." minutes" : $timeFoDelay);
             $maintenanceDateTime=$this->get('dateTime').":00";
             $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
-            $maintenanceWarningTime=strtotime("{$maintenanceDateTime} {$timeFoDelay}");
+            $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
+            if(is_numeric($timeFoDelay) || strval(intval($timeFoDelay)) == strval($timeFoDelay) ) {
+                $maintenanceWarningTime=strtotime($maintenanceDateTime) - $timeFoDelay*60;
+            } else {
+                $maintenanceWarningTime=strtotime($timeFoDelay);
+            }
             if($maintenanceWarningTime < strtotime("now")){
-                return (strtotime($maintenanceDateTime)-strtotime("now"))/60;
+                return (strtotime($maintenanceDateTime) - strtotime("now"))/60;
             }
         }
         return false;
