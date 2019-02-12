@@ -1,110 +1,120 @@
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: maintenanceMode\n"
-"POT-Creation-Date: 2017-01-30 18:09+0100\n"
-"PO-Revision-Date: 2017-01-30 18:09+0100\n"
+"POT-Creation-Date: 2019-02-12 14:23+0100\n"
+"PO-Revision-Date: 2019-02-12 14:22+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 2.2.1\n"
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: _translate\n"
+"X-Poedit-KeywordsList: gT\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: maintenanceMode.php:89
+#: maintenanceMode.php:97 maintenanceMode.php:146 maintenanceMode.php:230
+#: maintenanceMode.php:356 maintenanceMode.php:358
+msgid "This website is in maintenance mode."
+msgstr ""
+
+#: maintenanceMode.php:129
 msgid "Date / time for maintenance mode."
 msgstr ""
 
-#: maintenanceMode.php:92
+#: maintenanceMode.php:132
 msgid "Show warning message delay."
 msgstr ""
 
-#: maintenanceMode.php:93
-msgid "In minutes"
+#: maintenanceMode.php:133
+msgid "In minutes or with english string."
 msgstr ""
 
-#: maintenanceMode.php:96
+#: maintenanceMode.php:136
 msgid "Allow only super administrator to admin page."
 msgstr ""
 
-#: maintenanceMode.php:97
+#: maintenanceMode.php:137
 msgid "Admin login page are always accessible."
 msgstr ""
 
-#: maintenanceMode.php:100
+#: maintenanceMode.php:140
 msgid "Disable public part for administrator users."
 msgstr ""
 
-#: maintenanceMode.php:101
+#: maintenanceMode.php:141
 msgid "Even for Superadministrator(s)."
 msgstr ""
 
-#: maintenanceMode.php:104
+#: maintenanceMode.php:144
 msgid "Maintenance message"
 msgstr ""
 
-#: maintenanceMode.php:106 maintenanceMode.php:168 maintenanceMode.php:283
-#: maintenanceMode.php:285
-msgid "This website are on maintenance mode."
+#: maintenanceMode.php:148
+msgid "Default message was translated according to user language."
 msgstr ""
 
-#: maintenanceMode.php:110
+#: maintenanceMode.php:151
 msgid "Warning message."
 msgstr ""
 
-#: maintenanceMode.php:112 maintenanceMode.php:295
+#: maintenanceMode.php:153 maintenanceMode.php:370
 msgid "Warning"
 msgstr ""
 
-#: maintenanceMode.php:112 maintenanceMode.php:295
+#: maintenanceMode.php:153 maintenanceMode.php:370
 msgid ""
 "This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} "
 "minutes)."
 msgstr ""
 
-#: maintenanceMode.php:114
+#: maintenanceMode.php:156
+#, php-format
 msgid ""
-"You can use Expression manager : {DATEFORMATTED} was replaced by date in "
-"user language format, {DATE} by date in <code>Y-m-d H:i</code> format and "
-"{MINUTES} by number of minutes before maintenance."
+"You can use Expression manager : %s was replaced by date in user language "
+"format, %s by date in %s format and %s by number of minutes before "
+"maintenance."
 msgstr ""
 
-#: maintenanceMode.php:117
+#: maintenanceMode.php:161
 msgid "Disable token emailing during maintenance"
 msgstr ""
 
-#: maintenanceMode.php:121
+#: maintenanceMode.php:165
 msgid "Url to redirect users"
 msgstr ""
 
-#: maintenanceMode.php:122
+#: maintenanceMode.php:166
 msgid ""
 "Enter complete url only (with http:// or https://). {LANGUAGE} was replace "
 "by user language (ISO format if exist in this installation)."
 msgstr ""
 
-#: maintenanceMode.php:129
+#: maintenanceMode.php:175
 #, php-format
 msgid "Actual date/time : %s. Empty disable maintenance mode."
 msgstr ""
 
-#: maintenanceMode.php:132
+#: maintenanceMode.php:179
 msgid "This disable your access"
 msgstr ""
 
-#: maintenanceMode.php:146
+#: maintenanceMode.php:192
+msgid "Only for LimeSurvey 3.0.0 and up version"
+msgstr ""
+
+#: maintenanceMode.php:201
 msgid "You must download renderMessage plugin"
 msgstr ""
 
-#: maintenanceMode.php:151
+#: maintenanceMode.php:204
 msgid "You must activate renderMessage plugin"
 msgstr ""
 
-#: maintenanceMode.php:205
+#: maintenanceMode.php:269
 msgid "Bad url, you must review the redirect url."
 msgstr ""

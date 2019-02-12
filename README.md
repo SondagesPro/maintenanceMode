@@ -11,7 +11,7 @@ In the plugin settings : you find different settings, the most important are the
 
 See [Install and activate a plugin for LimeSurvey](http://extensions.sondages.pro/install-and-activate-a-plugin-for-limesurvey.html)
 
-You need [renderMessage](https://framagit.org/SondagePro-LimeSurvey-plugin/renderMessage) plugin.
+You need [renderMessage](https://gitlab.com/SondagesPro/coreAndTools/renderMessage) plugin.
 
 ### Via GIT
 - Go to your LimeSurvey Directory
@@ -24,10 +24,18 @@ You need [renderMessage](https://framagit.org/SondagePro-LimeSurvey-plugin/rende
 
 ## Translation
 
-The plugin use po file for translation, if you need a transation in your language : please, make a pull request.
-The file must be in locale/yourlanguagecode/messages.po, a modele.po is on locale directory.
+The plugin use po file for translation, if you need translation in your language : you can contibute at [translate.sondages.pro](https://translate.sondages.pro/projects/maintenancemode/).
+
+When it's done : open a issue at [gitlab](https://gitlab.com/SondagesPro/coreAndTools/renderMessage/issues).
+
+## Issues and support
+
+Issue can be reported at [gitlab](https://gitlab.com/SondagesPro/coreAndTools/renderMessage/issues), pull request are welcome.
+
+No support is done at gitlab, professionnal support : [support.sondages.pro](https://support.sondages.pro/).
 
 ## Home page & Copyright
+
 - HomePage <http://extension.sondages.pro/>
 - Copyright © 2017 Denis Chenu <http://sondages.pro>
 

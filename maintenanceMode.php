@@ -94,7 +94,7 @@ class maintenanceMode extends PluginBase {
             if($oUser) {
                 if(!Permission::model()->hasGlobalPermission('superadmin','read',$oUser->uid)) {
                     $identity->id = null;
-                    $this->getEvent()->set('result', new LSAuthResult(99, $this->gT("This website are on maintenance mode.")));
+                    $this->getEvent()->set('result', new LSAuthResult(99, $this->gT("This website is in maintenance mode.")));
                     $this->getEvent()->stop();
                 }
             }
@@ -143,7 +143,7 @@ class maintenanceMode extends PluginBase {
             'messageToShow' => array(
                 'label'=> $this->gT("Maintenance message"),
                 'htmlOptions'=>array(
-                    'placeholder'=> $this->gT("This website are on maintenance mode."),
+                    'placeholder'=> $this->gT("This website is in maintenance mode."),
                 ),
                 'help' => $this->gT("Default message was translated according to user language."),
             ),
@@ -227,7 +227,7 @@ class maintenanceMode extends PluginBase {
         $done = true;
         if($this->_inMaintenance()){
             if($this->_accessAllowed()){
-                $this->_addFlashMessage($this->gT("This website are on maintenance mode."));
+                $this->_addFlashMessage($this->gT("This website is in maintenance mode."));
                 return;
             }
             $this->_endDuToMaintenance();
@@ -353,9 +353,9 @@ class maintenanceMode extends PluginBase {
             $url=str_replace("{LANGUAGE}",$lang,$url);
             header('Location: '.$url);
         }
-        $message = $this->get('messageToShow',null,null,$this->gT("This website are on maintenance mode."));
+        $message = $this->get('messageToShow',null,null,$this->gT("This website is in maintenance mode."));
         if(!$message){
-            $message = $this->gT("This website are on maintenance mode.");
+            $message = $this->gT("This website is in maintenance mode.");
         }
         /* rendering quit */
         //$this->_render($message);
