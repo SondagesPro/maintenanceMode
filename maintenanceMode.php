@@ -150,7 +150,7 @@ class maintenanceMode extends PluginBase {
             'warningToShow' => array(
                 'label' =>  $this->gT("Warning message."),
                 'htmlOptions'=>array(
-                    'placeholder'=>sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->gT("Warning"),$this->gT("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes).")),
+                    'placeholder'=>sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->gT("Warning"),$this->gT("This website will close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes).")),
                 ),
                 'help' => sprintf(
                     $this->gT("You can use Expression manager : %s was replaced by date in user language format, %s by date in %s format and %s by number of minutes before maintenance."),
