@@ -3,10 +3,10 @@
  * maintenanceMode : Put installation on Maintenance mode
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2017-2018 Denis Chenu <http://www.sondages.pro>
+ * @copyright 2017-2019 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.2.0
+ * @version 1.3.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -130,7 +130,7 @@ class maintenanceMode extends PluginBase {
             ),
             'timeForDelay' => array(
                 'label' => $this->gT("Show warning message delay."),
-                'help' => $this->gT("In minutes or with english string."),
+                'help' => $this->gT("In minutes or with english date string. With usage of minutes, message is set to danger when there are only 10% of the time for maintenance."),
             ),
             'superAdminOnly' => array(
                 'label'=> $this->gT("Allow only super administrator to admin page."),
@@ -261,7 +261,13 @@ class maintenanceMode extends PluginBase {
             $settings['dateTime']=$oDateTimeConverter->convert("Y-m-d H:i");
         }
         if(!empty($settings['timeForDelay'])){
-            $settings['timeForDelay']=filter_var($settings['timeForDelay'],FILTER_SANITIZE_NUMBER_INT);
+            if(filter_var($settings['timeForDelay'],FILTER_SANITIZE_NUMBER_INT)) {
+                $settings['timeForDelay']=$settings['timeForDelay'];
+                $settings['timeForDelayInMinute']= 1;
+            } elseif(date($settings['timeForDelay'])) {
+                $settings['timeForDelay']=$settings['timeForDelay'];
+                $settings['timeForDelayInMinute']= 0;
+            }
         }
         if(!empty($settings['urlRedirect'])){
             if(!filter_var($settings['urlRedirect'],FILTER_VALIDATE_URL)){
@@ -285,7 +291,7 @@ class maintenanceMode extends PluginBase {
                 $this->log("In maintenance");
                 return true;
             }
-            $this->log("Not in manintenance");
+            $this->log("Not in maintenance");
         }
         return false;
     }
@@ -296,15 +302,15 @@ class maintenanceMode extends PluginBase {
     private function _inWarningMaintenance(){
         if(trim($this->get('dateTime')) && trim($this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']))) {
             $maintenanceDateTime=$this->get('dateTime').":00";
-            $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
+            $dateTimeNow=dateShift(date('Y-m-d H:i:s'), "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
             $timeFoDelay=$this->get('timeForDelay',null,null,$this->settings['timeForDelay']['default']);
             if(is_numeric($timeFoDelay) || strval(intval($timeFoDelay)) == strval($timeFoDelay) ) {
                 $maintenanceWarningTime=strtotime($maintenanceDateTime) - $timeFoDelay*60;
             } else {
                 $maintenanceWarningTime=strtotime($timeFoDelay);
             }
-            if($maintenanceWarningTime < strtotime("now")){
-                return (strtotime($maintenanceDateTime) - strtotime("now"))/60;
+            if($maintenanceWarningTime < strtotime($dateTimeNow)){
+                return (strtotime($maintenanceDateTime) - strtotime($dateTimeNow))/60;
             }
         }
         return false;
@@ -366,11 +372,10 @@ class maintenanceMode extends PluginBase {
         $minutesBeforeMaintenance=$this->_inWarningMaintenance();
         if($minutesBeforeMaintenance){
             $message=$this->get('warningToShow');
-            if(!$message){
+            if(empty($message)){
                 $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->gT("Warning"),$this->gT("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
             }
             $maintenanceDateTime=$this->get('dateTime').":00";
-            //~ $maintenanceDateTime=dateShift($maintenanceDateTime, "Y-m-d H:i:s",Yii::app()->getConfig("timeadjust"));
             $aLanguage=getLanguageDetails(Yii::app()->language);
             $oDateTimeConverter = new Date_Time_Converter($maintenanceDateTime, "Y-m-d H:i");
             $aDateFormat=getDateFormatData($aLanguage['dateformat']);
@@ -382,7 +387,10 @@ class maintenanceMode extends PluginBase {
             );
             $message=LimeExpressionManager::ProcessStepString($message, $aReplacement, 3,true);
             $timeFoDelay=$this->get('timeForDelay');
-            $class=($minutesBeforeMaintenance < ($timeFoDelay/10)) ? 'danger' : 'warning';
+            $class = 'warning';
+            if(is_numeric($timeFoDelay) && ($minutesBeforeMaintenance < ($timeFoDelay/10)) ) {
+                $class = 'danger';
+            }
             $this->_addFlashMessage($message,$class);
         }
     }
@@ -399,10 +407,13 @@ class maintenanceMode extends PluginBase {
     /**
      * @inheritdoc
      * Adding message to vardump if user activate debug mode
+     * Use default plugin log too
      */
     public function log($message, $level = \CLogger::LEVEL_TRACE)
     {
-        parent::log($message, $level);
+        if(is_callable("parent::log")) {
+            parent::log($message, $level);
+        }
         Yii::log("[".get_class($this)."] ".$message, $level, 'vardump');
     }
     

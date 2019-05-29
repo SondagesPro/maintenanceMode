@@ -37,7 +37,7 @@ No support is done at gitlab, professionnal support : [support.sondages.pro](htt
 ## Home page & Copyright
 
 - HomePage <http://extension.sondages.pro/>
-- Copyright © 2017 Denis Chenu <http://sondages.pro>
+- Copyright © 2017-2019 Denis Chenu <http://sondages.pro>
 
 Distributed under [AFFERO GNU GENERAL PUBLIC LICENSE Version 3](http://www.gnu.org/licenses/agpl.txt) licence.
 If you need a more permissive Licence [contact](http://extensions.sondages.pro/about/contact.html).
