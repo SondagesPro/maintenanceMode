@@ -6,7 +6,7 @@
  * @copyright 2017-2019 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.3.0
+ * @version 1.3.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -267,6 +267,9 @@ class maintenanceMode extends PluginBase {
             } elseif(date($settings['timeForDelay'])) {
                 $settings['timeForDelay']=$settings['timeForDelay'];
                 $settings['timeForDelayInMinute']= 0;
+            } else {
+                Yii::app()->setFlashMessage($this->gT("Bad delay, you must review the time for delay."),'error');
+                $settings['timeForDelay']="";
             }
         }
         if(!empty($settings['urlRedirect'])){
@@ -274,6 +277,14 @@ class maintenanceMode extends PluginBase {
                 $settings['urlRedirect']="";
                 Yii::app()->setFlashMessage($this->gT("Bad url, you must review the redirect url."),'error');
             }
+        }
+        if(!empty($settings['warningToShow'])) {
+            $oPurifier = new CHtmlPurifier();
+            $settings['warningToShow'] = $oPurifier->purify($settings['warningToShow']);
+        }
+        if(!empty($settings['messageToShow'])) {
+            $oPurifier = new CHtmlPurifier();
+            $settings['messageToShow'] = $oPurifier->purify($settings['messageToShow']);
         }
         parent::saveSettings($settings);
     }
