@@ -6,7 +6,7 @@
  * @copyright 2017-2019 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.3.1
+ * @version 1.4.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -64,17 +64,14 @@ class maintenanceMode extends PluginBase {
         if(intval(App()->getConfig('versionnumber')) < 3) {
             return;
         }
+
         $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
-        if(!$oRenderMessage) {
-            $this->log("You must download and activate renderMessage plugin",'error');
-            return;
-        } elseif(!$oRenderMessage->active) {
-            $this->log("You must activate renderMessage plugin",'error');
+        if(!$oRenderMessage || !$oRenderMessage->active) {
+            $this->subscribe('beforeControllerAction','addFlashMessage');
             return;
         }
 
         $this->subscribe('beforeControllerAction');
-        $this->subscribe('beforeSurveyPage','beforeControllerAction');
         /* disable login for admin */
         $this->subscribe('newUserSession');
 
@@ -100,7 +97,7 @@ class maintenanceMode extends PluginBase {
             }
         }
     }
-    
+
     /* @see plugin event */
     public function getPluginTwigPath() 
     {
@@ -108,6 +105,22 @@ class maintenanceMode extends PluginBase {
         $this->getEvent()->append('add', array($viewPath));
     }
 
+    /**
+     * See plugin event
+     * Add flash message for admin
+     */
+    public function afterPluginLoad() {
+        if(Yii::app()->getController()->getId() == "admin" && Permission::model()->hasGlobalPermission("settings","update") ) {
+            $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
+            if(!$oRenderMessage) {
+                App()->setFlashMessage($this->gT("You must download and activate renderMessage plugin"),'error');
+                return;
+            } elseif(!$oRenderMessage->active) {
+                 App()->setFlashMessage($this->gT("You must activate renderMessage plugin"),'error');
+                return;
+            }
+        }
+    }
     /**
      * fix some settings
      * @see PluginBase
@@ -207,6 +220,31 @@ class maintenanceMode extends PluginBase {
 
     }
 
+    /**
+     * If admin part : add the warning message for admin user with settings update allaowed
+     */
+    public function addFlashMessage()
+    {
+        if(Yii::app()->getRequest()->getIsAjaxRequest()) {
+            /* Don't add multiple times, this disable it in soma page, but just need to see it one time */
+            return;
+        }
+        $addFlash = $this->getEvent()->get("controller")== "admin" && Permission::model()->hasGlobalPermission("settings","update");
+        $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
+        if(!$oRenderMessage) {
+            $this->log("You must download and activate renderMessage plugin",'error');
+            if($addFlash) {
+                App()->setFlashMessage($this->gT("You have maintenanceMode plugin activated : it requires the plugin renderMessage."),"error");
+            }
+            return;
+        }
+        if(!$oRenderMessage->active) {
+            $this->log("You must activate renderMessage plugin",'error');
+            if($addFlash) {
+                App()->setFlashMessage($this->gT("You have maintenanceMode plugin activated : it requires the plugin renderMessage activated."),"error");
+            }
+        }
+    }
     /*
      * If not admin part : redirect to specific page or show a message
      */
