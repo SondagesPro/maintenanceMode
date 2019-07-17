@@ -6,7 +6,7 @@
  * @copyright 2017-2019 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.4.0
+ * @version 1.5.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -64,7 +64,7 @@ class maintenanceMode extends PluginBase {
         if(intval(App()->getConfig('versionnumber')) < 3) {
             return;
         }
-
+        $this->subscribe('beforeActivate');
         $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
         if(!$oRenderMessage || !$oRenderMessage->active) {
             $this->subscribe('beforeControllerAction','addFlashMessage');
@@ -74,10 +74,8 @@ class maintenanceMode extends PluginBase {
         $this->subscribe('beforeControllerAction');
         /* disable login for admin */
         $this->subscribe('newUserSession');
-
+        /* Disable mail send */
         $this->subscribe('beforeTokenEmail');
-        $this->subscribe('beforeActivate');
-
         /* This need twigExtendByPlugins */
         $this->subscribe('getPluginTwigPath');
     
@@ -127,7 +125,26 @@ class maintenanceMode extends PluginBase {
      */
     public function getPluginSettings($getValues=true)
     {
-        $pluginSettings= parent::getPluginSettings($getValues);
+        $pluginSettings = parent::getPluginSettings($getValues);
+        /* Add a big warning about needed renderMessage */
+        $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
+        if(!$oRenderMessage) {
+            $warningRenderMessage['warningRenderMessage']= array(
+                'type'=>"info",
+                'content' => CHtml::tag("p",array(),$this->gT("You can not use maintenance mode with actual configuration."))
+                    . CHtml::tag("p",array(),$this->gT("You must download and activate renderMessage plugin")),
+                'class'=>"h3 alert alert-warning",
+            );
+            $pluginSettings = $warningRenderMessage + $pluginSettings;
+        } elseif(!$oRenderMessage->active) {
+            $warningRenderMessage['warningRenderMessage']= array(
+                'type'=>"info",
+                'content' => CHtml::tag("p",array(),$this->gT("You can not use maintenance mode with actual configuration."))
+                    . CHtml::tag("p",array(),$this->gT("You must and activate renderMessage plugin")),
+                'class'=>"h3 alert alert-warning",
+            );
+            $pluginSettings = $warningRenderMessage + $pluginSettings;
+        }
         $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
         if($getValues){
             if(!empty($pluginSettings['dateTime']['current'])){
@@ -325,6 +342,23 @@ class maintenanceMode extends PluginBase {
             $settings['messageToShow'] = $oPurifier->purify($settings['messageToShow']);
         }
         parent::saveSettings($settings);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDescription()
+    {
+        $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
+        
+        if(!$oRenderMessage) {
+            return "You must download and activate renderMessage plugin to use maintenanceMode.";
+        }
+        if(!$oRenderMessage->active) {
+            return "You must activate renderMessage plugin to use maintenanceMode.";
+        }
+        // Unable to use $this since we are in a static function.
+        return "Put your LimeSurvey instance on maintenance mode , allow admin access or not.";
     }
 
     /**
