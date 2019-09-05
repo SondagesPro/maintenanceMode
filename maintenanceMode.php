@@ -456,7 +456,7 @@ class maintenanceMode extends PluginBase {
         if($minutesBeforeMaintenance){
             $message=$this->get('warningToShow');
             if(empty($message)){
-                $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->gT("Warning"),$this->gT("This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
+                $message=sprintf("<strong class='h4'>%s</strong><p>%s</p>",$this->gT("Warning"),$this->gT("This website will close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."));
             }
             $maintenanceDateTime=$this->get('dateTime').":00";
             $aLanguage=getLanguageDetails(Yii::app()->language);

@@ -2,107 +2,165 @@
 # This file is distributed under the same license as the maintenanceMode package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2019-02-12 14:35+0100\n"
+"Project-Id-Version: maintenanceMode\n"
+"POT-Creation-Date: 2019-09-05 17:10+0200\n"
+"PO-Revision-Date: 2019-09-05 17:13+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Poedit 2.2.1\n"
-"Language: fr\n"
-"Project-Id-Version: maintenanceMode\n"
-"POT-Creation-Date: \n"
-"Last-Translator: \n"
-"Language-Team: \n"
+"X-Generator: Poedit 2.2.3\n"
 
-#: maintenanceMode.php:269
-msgid "Bad url, you must review the redirect url."
-msgstr "L'adresse internet de redirection est invalide."
+#: maintenanceMode.php:92 maintenanceMode.php:176 maintenanceMode.php:285
+#: maintenanceMode.php:445 maintenanceMode.php:447
+msgid "This website is in maintenance mode."
+msgstr "Ce site internet est en maintenance."
 
-#: maintenanceMode.php:204
+#: maintenanceMode.php:114 maintenanceMode.php:135
+msgid "You must download and activate renderMessage plugin"
+msgstr "Vous devez télécharger et activer le plugin renderMessage"
+
+#: maintenanceMode.php:117 maintenanceMode.php:234
 msgid "You must activate renderMessage plugin"
 msgstr "Vous devez activer le plugin renderMessage"
 
-#: maintenanceMode.php:201
-msgid "You must download renderMessage plugin"
-msgstr "Vous devez télécharger le plugin renderMessage"
+#: maintenanceMode.php:134 maintenanceMode.php:142
+msgid "You can not use maintenance mode with actual configuration."
+msgstr ""
+"Vous ne pouvez pas utiliser le mode maintenance dans la configuration "
+"actuelle"
 
-#: maintenanceMode.php:192
-msgid "Only for LimeSurvey 3.0.0 and up version"
-msgstr "Uniquement pour LimeSurvey 3.0.0 ou supérieur"
+#: maintenanceMode.php:143
+msgid "You must and activate renderMessage plugin"
+msgstr "Vous devez activer le plugin renderMessage"
 
-#: maintenanceMode.php:179
-msgid "This disable your access"
-msgstr "Ceci désactivera votre accès"
-
-#: maintenanceMode.php:175
-msgid "Actual date/time : %s. Empty disable maintenance mode."
-msgstr "Date et heure actuelle : %s. Vide pour désactiver le mode maintenance."
-
-#: maintenanceMode.php:166
-msgid "Enter complete url only (with http:// or https://). {LANGUAGE} was replace by user language (ISO format if exist in this installation)."
-msgstr "Entrez une adresse complète (avec http:// ou https://). {LANGUAGE} sera remplacé par la langue de l'utilisateur (au format ISO si elle existe dans l'installation)."
-
-#: maintenanceMode.php:165
-msgid "Url to redirect users"
-msgstr "Adresse url de redirection des utilisateurs"
-
-#: maintenanceMode.php:161
-msgid "Disable token emailing during maintenance"
-msgstr "Désactiver l'envoie des courriels d'invitations durant la maintenance"
-
-#: maintenanceMode.php:156
-msgid "You can use Expression manager : %s was replaced by date in user language format, %s by date in %s format and %s by number of minutes before maintenance."
-msgstr "Vous pouvez utiliser le gestionnaire d'expressions. %s sera remplacé par la date formatée en fonction de la langue de l'utilisateur, %s par la date au format %s et %s par le nombre de minutes avant la maintenance."
-
-#: maintenanceMode.php:153 maintenanceMode.php:370
-msgid "This website close for maintenance at {DATEFORMATTED} (in {intval(MINUTES)} minutes)."
-msgstr "Ce site internet sera en maintenance à {DATEFORMATTED} (dans {intval(MINUTES)} minutes)."
-
-#: maintenanceMode.php:153 maintenanceMode.php:370
-msgid "Warning"
-msgstr "Attention"
-
-#: maintenanceMode.php:151
-msgid "Warning message."
-msgstr "Message d'alerte."
-
-#: maintenanceMode.php:148
-msgid "Default message was translated according to user language."
-msgstr "Le message par défaut sera traduit selon la langue de l‘utilisateur."
-
-#: maintenanceMode.php:144
-msgid "Maintenance message"
-msgstr "Message de maintenance"
-
-#: maintenanceMode.php:141
-msgid "Even for Superadministrator(s)."
-msgstr "Même pour les super-administrateur(s)"
-
-#: maintenanceMode.php:140
-msgid "Disable public part for administrator users."
-msgstr "Désactiver l'accès aux pages publiques aux administrateurs."
-
-#: maintenanceMode.php:137
-msgid "Admin login page are always accessible."
-msgstr "La page de connexion est toujours accessible."
-
-#: maintenanceMode.php:136
-msgid "Allow only super administrator to admin page."
-msgstr "Ne permettre l'accès à l'administration que aux super-administrateurs."
-
-#: maintenanceMode.php:133
-msgid "In minutes or with english string."
-msgstr "En minutes ou avec un date en langue anglaise."
-
-#: maintenanceMode.php:132
-msgid "Show warning message delay."
-msgstr "Montrer le message d'alerte."
-
-#: maintenanceMode.php:129
+#: maintenanceMode.php:159
 msgid "Date / time for maintenance mode."
 msgstr "Date et heure du passage en mode maintenance."
 
-#: maintenanceMode.php:97 maintenanceMode.php:146 maintenanceMode.php:230
-#: maintenanceMode.php:356 maintenanceMode.php:358
-msgid "This website is in maintenance mode."
-msgstr "Ce site internet est en maintenance."
+#: maintenanceMode.php:162
+msgid "Show warning message delay."
+msgstr "Montrer le message d'alerte."
+
+#: maintenanceMode.php:163
+#, php-format
+msgid ""
+"In minutes or with english date string. With usage of minutes, message is "
+"set to danger when there are only 10% of the time for maintenance."
+msgstr ""
+"En minutes ou avec une date anglaise. Avec l'utilisation de minutes, le "
+"message utilise la classe danger quand il ne reste que 10% du temps."
+
+#: maintenanceMode.php:166
+msgid "Allow only super administrator to admin page."
+msgstr "Ne permettre l'accès à l'administration que aux super-administrateurs."
+
+#: maintenanceMode.php:167
+msgid "Admin login page are always accessible."
+msgstr "La page de connexion est toujours accessible."
+
+#: maintenanceMode.php:170
+msgid "Disable public part for administrator users."
+msgstr "Désactiver l'accès aux pages publiques aux administrateurs."
+
+#: maintenanceMode.php:171
+msgid "Even for Superadministrator(s)."
+msgstr "Même pour les super-administrateur(s)"
+
+#: maintenanceMode.php:174
+msgid "Maintenance message"
+msgstr "Message de maintenance"
+
+#: maintenanceMode.php:178
+msgid "Default message was translated according to user language."
+msgstr "Le message par défaut sera traduit selon la langue de l‘utilisateur."
+
+#: maintenanceMode.php:181
+msgid "Warning message."
+msgstr "Message d'alerte."
+
+#: maintenanceMode.php:183 maintenanceMode.php:459
+msgid "Warning"
+msgstr "Attention"
+
+#: maintenanceMode.php:183 maintenanceMode.php:459
+msgid ""
+"This website will close for maintenance at {DATEFORMATTED} (in "
+"{intval(MINUTES)} minutes)."
+msgstr ""
+"Ce site internet sera en maintenance à {DATEFORMATTED} (dans "
+"{intval(MINUTES)} minutes)."
+
+#: maintenanceMode.php:186
+#, php-format
+msgid ""
+"You can use Expression manager : %s was replaced by date in user language "
+"format, %s by date in %s format and %s by number of minutes before "
+"maintenance."
+msgstr ""
+"Vous pouvez utiliser le gestionnaire d'expressions. %s sera remplacé par la "
+"date formatée en fonction de la langue de l'utilisateur, %s par la date au "
+"format %s et %s par le nombre de minutes avant la maintenance."
+
+#: maintenanceMode.php:191
+msgid "Disable token emailing during maintenance"
+msgstr "Désactiver l'envoie des courriels d'invitations durant la maintenance"
+
+#: maintenanceMode.php:195
+msgid "Url to redirect users"
+msgstr "Adresse url de redirection des utilisateurs"
+
+#: maintenanceMode.php:196
+msgid ""
+"Enter complete url only (with http:// or https://). {LANGUAGE} was replace "
+"by user language (ISO format if exist in this installation)."
+msgstr ""
+"Entrez une adresse complète (avec http:// ou https://). {LANGUAGE} sera "
+"remplacé par la langue de l'utilisateur (au format ISO si elle existe dans "
+"l'installation)."
+
+#: maintenanceMode.php:205
+#, php-format
+msgid "Actual date/time : %s. Empty disable maintenance mode."
+msgstr "Date et heure actuelle : %s. Vide pour désactiver le mode maintenance."
+
+#: maintenanceMode.php:209
+msgid "This disable your access"
+msgstr "Ceci désactivera votre accès"
+
+#: maintenanceMode.php:222
+msgid "Only for LimeSurvey 3.0.0 and up version"
+msgstr "Uniquement pour LimeSurvey 3.0.0 ou supérieur"
+
+#: maintenanceMode.php:231
+msgid "You must download renderMessage plugin"
+msgstr "Vous devez télécharger le plugin renderMessage"
+
+#: maintenanceMode.php:254
+msgid ""
+"You have maintenanceMode plugin activated : it requires the plugin "
+"renderMessage."
+msgstr ""
+"Vous avez le plugin maintenanceMode : il nécessite le plugin renderMessage."
+
+#: maintenanceMode.php:261
+msgid ""
+"You have maintenanceMode plugin activated : it requires the plugin "
+"renderMessage activated."
+msgstr ""
+"Vous avez le plugin maintenanceMode : il nécessite le plugin renderMessage "
+"activé."
+
+#: maintenanceMode.php:326
+msgid "Bad delay, you must review the time for delay."
+msgstr "Mauvaise valeur pour le délais, vous devez vérifier la valeur."
+
+#: maintenanceMode.php:333
+msgid "Bad url, you must review the redirect url."
+msgstr "L'adresse internet de redirection est invalide."
+
+#~ msgid "In minutes or with english string."
+#~ msgstr "En minutes ou avec un date en langue anglaise."
