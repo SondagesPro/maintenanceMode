@@ -3,10 +3,10 @@
  * maintenanceMode : Put installation on Maintenance mode
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2017-2019 Denis Chenu <http://www.sondages.pro>
+ * @copyright 2017-2020 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.5.0
+ * @version 1.5.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -82,6 +82,9 @@ class maintenanceMode extends PluginBase {
     }
 
     public function newUserSession() {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         if($this->get('superAdminOnly') && $this->_inMaintenance()){
             $identity = $this->getEvent()->get('identity');
             $sUser  = $identity->username;
@@ -99,6 +102,9 @@ class maintenanceMode extends PluginBase {
     /* @see plugin event */
     public function getPluginTwigPath() 
     {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         $viewPath = dirname(__FILE__)."/views";
         $this->getEvent()->append('add', array($viewPath));
     }
@@ -108,6 +114,9 @@ class maintenanceMode extends PluginBase {
      * Add flash message for admin
      */
     public function afterPluginLoad() {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         if(Yii::app()->getController()->getId() == "admin" && Permission::model()->hasGlobalPermission("settings","update") ) {
             $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
             if(!$oRenderMessage) {
@@ -125,6 +134,9 @@ class maintenanceMode extends PluginBase {
      */
     public function getPluginSettings($getValues=true)
     {
+        if(!Permission::model()->hasGlobalPermission('settings','read')) {
+            throw new CHttpException(403);
+        }
         $pluginSettings = parent::getPluginSettings($getValues);
         /* Add a big warning about needed renderMessage */
         $oRenderMessage = Plugin::model()->find("name=:name",array(":name"=>'renderMessage'));
@@ -216,6 +228,9 @@ class maintenanceMode extends PluginBase {
      */
     public function beforeActivate()
     {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         // Control LimeSurvey version
         $lsVersion = floatval(Yii::app()->getConfig('versionnumber'));
         if($lsVersion < 3) {
@@ -267,6 +282,9 @@ class maintenanceMode extends PluginBase {
      */
     public function beforeControllerAction()
     {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         /* Don't add it 2 times, strangely beforeControllerAction happen 2 times */
         static $done;
         
@@ -297,6 +315,9 @@ class maintenanceMode extends PluginBase {
      */
     public function beforeTokenEmail()
     {
+        if (!$this->getEvent()) {
+            throw new CHttpException(403);
+        }
         if($this->_inMaintenance()){
             if($this->get('disableMailSend',null,null,$this->settings['disableMailSend']['default'])){
                 $this->event->set('send',false);
@@ -310,6 +331,9 @@ class maintenanceMode extends PluginBase {
      */
     public function saveSettings($settings)
     {
+        if(!Permission::model()->hasGlobalPermission('settings','update')) {
+            throw new CHttpException(403);
+        }
         if(!empty($settings['dateTime'])){
             $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
             $oDateTimeConverter = new Date_Time_Converter($settings['dateTime'], $aDateFormatData['phpdate'] . " H:i");
