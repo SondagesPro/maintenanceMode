@@ -3,10 +3,10 @@
  * maintenanceMode : Put installation on Maintenance mode
  *
  * @author Denis Chenu <denis@sondages.pro>
- * @copyright 2017-2020 Denis Chenu <http://www.sondages.pro>
+ * @copyright 2017-2023 Denis Chenu <http://www.sondages.pro>
 
  * @license AGPL v3
- * @version 1.5.1
+ * @version 1.6.0
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -428,24 +428,26 @@ class maintenanceMode extends PluginBase {
      */
     private function _accessAllowed(){
         /* don't used : Yii::app()->user->isGuest : reset the App()->language */
+        $isAdminController = self::isAdminController();
         /* Always allow superadmin */
-        if (Permission::model()->hasGlobalPermission("superadmin") && ($this->event->get('controller')=='admin' || $this->event->get('controller')=='plugins')) {
+        if (Permission::model()->hasGlobalPermission("superadmin") && $isAdminController) {
             return true;
         }
         /* Allow pluginmanager access for user with settings update */
-        if(Permission::model()->hasGlobalPermission("settings",'update') && $this->event->get('controller') == 'admin' && $this->event->get('action') == 'pluginmanager') {
+        if(Permission::model()->hasGlobalPermission("settings",'update') && $isAdminController) {
             return true;
         }
+        
         /* Always allow admin login */
-        if(!Permission::getUserId() && $this->event->get('controller')=='admin'){
+        if(!Yii::app()->session['loginID'] && $isAdminController){
             return true;
         }
         /* Allow admin in condition : disablePublicPart is true (and not admin)*/
-        if(Permission::getUserId() && $this->event->get('controller')!='admin' && !$this->get('disablePublicPart')){
+        if(Yii::app()->session['loginID'] && !$isAdminController && !$this->get('disablePublicPart')){
             return true;
         }
         /* Allow admin in condition : superAdminOnly is false*/
-        if(Permission::getUserId() && $this->event->get('controller')=='admin' && !$this->get('superAdminOnly')){
+        if(Yii::app()->session['loginID'] && $isAdminController && !$this->get('superAdminOnly')){
             return true;
         }
         return false;
@@ -534,12 +536,40 @@ class maintenanceMode extends PluginBase {
         if(Yii::app()->getRequest()->isAjaxRequest) {
             return;
         }
-        $controller = Yii::app()->getController()->getId();
-        if($controller=='admin') {
+        if (self::isAdminController()) {
             Yii::app()->setFlashMessage($message, $class);
             return;
         }
         \renderMessage\messageHelper::addFlashMessage($message,$class);
     }
 
+    /**
+     * Check if current controller is an admin controller
+     * @return boolena
+     */
+    private static function isAdminController()
+    {
+        $controller = Yii::app()->getController()->getId();
+        if($controller=='admin') {
+            return true;
+        }
+        /* 5X controller */
+        $adminControllers = [
+            'surveyadministration',
+            'assessment',
+            'failedemail',
+            'questionadministration',
+            'questiongroupsadministration',
+            'surveypermissions',
+            'surveysgroupspermission',
+            'themeoptions',
+            'usergroup',
+            'usermanagement',
+            'userrole',
+        ];
+        if (in_array(strtolower($controller) , $adminControllers)) {
+            return true;
+        }
+        return false;
+    }
 }

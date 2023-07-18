@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <metadata>
+        <name>maintenanceMode</name>
+        <type>plugin</type>
+        <creationDate>2017-01-23</creationDate>
+        <last_update>2021-07-06</last_update>
+        <author>Denis Chenu</author>
+        <authorUrl>https://www.sondages.pro</authorUrl>
+        <license>GNU Affero General Public License v3.0</license>
+        <version>1.6.0</version>
+        <description><![CDATA[Allow invalid SSL for smtp server.]]></description>
+    </metadata>
+
+    <compatibility>
+        <version>3</version>
+        <version>5</version>
+    </compatibility>
+
+    <updaters disabled="disabled">
+    </updaters>
+</config>
