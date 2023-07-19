@@ -8,8 +8,8 @@
         <author>Denis Chenu</author>
         <authorUrl>https://www.sondages.pro</authorUrl>
         <license>GNU Affero General Public License v3.0</license>
-        <version>1.6.0</version>
-        <description><![CDATA[Allow invalid SSL for smtp server.]]></description>
+        <version>1.6.1</version>
+        <description><![CDATA[Set you LimeSurvey instance on maintenance mode, for any purpose, update a survey, update instance…]]></description>
     </metadata>
 
     <compatibility>
